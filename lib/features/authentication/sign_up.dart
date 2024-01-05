@@ -2,6 +2,7 @@ import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../routes.dart';
 import '../../widgets/input_field.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -74,11 +75,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
             SizedBox(height: 15.0.h),
             PrimaryButton(
-              onPressed: () {},
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.dashboard),
               buttonText: "SIGN UP",
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.signIn),
               child: Text(
                 "Have An Account? Sign In",
                 style: TextStyle(

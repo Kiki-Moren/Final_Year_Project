@@ -20,6 +20,8 @@ dependencies:
   cached_network_image: ^3.3.0
   currency_text_input_formatter: ^2.1.10
   flutter_native_splash: ^2.3.7
+  flashy_tab_bar2: ^0.0.6
+  flutter_switch: ^0.3.2
 
 dev_dependencies:
   flutter_test:
