@@ -2,6 +2,8 @@ import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../routes.dart';
+
 class AuthenticationScreen extends StatefulWidget {
   const AuthenticationScreen({super.key});
 
@@ -33,12 +35,14 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
             ),
             SizedBox(height: 100.0.h),
             PrimaryButton(
-              onPressed: () {},
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.signIn),
               buttonText: "LOG IN",
             ),
             SizedBox(height: 20.0.h),
             PrimaryButton(
-              onPressed: () {},
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.signUp),
               buttonText: "SIGN UP",
             ),
           ],
