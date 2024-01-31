@@ -22,6 +22,7 @@ dependencies:
   flutter_native_splash: ^2.3.7
   flashy_tab_bar2: ^0.0.6
   flutter_switch: ^0.3.2
+  fl_chart: ^0.66.1
 
 dev_dependencies:
   flutter_test:

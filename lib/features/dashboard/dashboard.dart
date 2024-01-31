@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'account/account.dart';
+import 'home/home.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -24,7 +25,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildBody() {
     return _selectedIndex == 0
-        ? Container(color: Colors.amber)
+        ? const HomeTab()
         : _selectedIndex == 1
             ? Container(color: Colors.red)
             : _selectedIndex == 2
