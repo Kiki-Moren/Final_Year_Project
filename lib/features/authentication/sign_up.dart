@@ -1,6 +1,7 @@
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../routes.dart';
@@ -35,27 +36,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
       setState(() {
         _loading = true;
       });
+      try {
+        final response = await Supabase.instance.client.auth.signUp(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
 
-      final response = await Supabase.instance.client.auth.signUp(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
+        setState(() {
+          _loading = false;
+        });
 
-      setState(() {
-        _loading = false;
-      });
+        if (response.session != null) {
+          final user = response.user;
 
-      if (response.session != null) {
-        final user = response.user;
-        // await Supabase.instance.client
-        //     .from('users')
-        //     .insert({'id': user!.id, 'username': _usernameController.text})
-        //     .execute();
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false);
-      } else {
+          await Supabase.instance.client.from('users').insert({
+            'user_id': user!.id,
+            'username': _usernameController.text,
+            'email': _emailController.text,
+          });
+
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false);
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text("Sign up failed")));
+        }
+      } catch (e) {
+        AuthException authException = e as AuthException;
+
+        setState(() {
+          _loading = false;
+        });
+        Logger().d(e);
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Sign up failed")));
+            .showSnackBar(SnackBar(content: Text(authException.message)));
       }
     }
   }
