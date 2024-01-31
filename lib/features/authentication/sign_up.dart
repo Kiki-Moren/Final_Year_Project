@@ -1,6 +1,7 @@
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../routes.dart';
 import '../../widgets/input_field.dart';
@@ -13,6 +14,52 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmController = TextEditingController();
+  bool _loading = false;
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
+
+  void _signUp() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _loading = true;
+      });
+
+      final response = await Supabase.instance.client.auth.signUp(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      setState(() {
+        _loading = false;
+      });
+
+      if (response.session != null) {
+        final user = response.user;
+        // await Supabase.instance.client
+        //     .from('users')
+        //     .insert({'id': user!.id, 'username': _usernameController.text})
+        //     .execute();
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false);
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Sign up failed")));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(body: _buildBody());
@@ -22,76 +69,99 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: ListView(
-          children: [
-            SizedBox(height: 10.0.h),
-            Image.asset(
-              "assets/images/app_icon1.png",
-              width: 180.0.w,
-              height: 180.0.w,
-            ),
-            SizedBox(height: 30.0.h),
-            Text(
-              "SIGN UP",
-              style: TextStyle(
-                fontSize: 32.0.sp,
-                fontWeight: FontWeight.w700,
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              SizedBox(height: 10.0.h),
+              Image.asset(
+                "assets/images/app_icon1.png",
+                width: 180.0.w,
+                height: 180.0.w,
               ),
-            ),
-            Text(
-              "Please sign up to enjoy all trakit features",
-              style: TextStyle(
-                fontSize: 16.0.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(height: 20.0.h),
-            InputField(
-              controller: TextEditingController(),
-              hint: "john",
-              label: "Username",
-              validator: (value) => null,
-            ),
-            SizedBox(height: 15.0.h),
-            InputField(
-              controller: TextEditingController(),
-              hint: "johndoe@gmail.com",
-              label: "Email Address",
-              validator: (value) => null,
-            ),
-            SizedBox(height: 15.0.h),
-            InputField(
-              controller: TextEditingController(),
-              hint: "**********",
-              label: "Password",
-              validator: (value) => null,
-            ),
-            SizedBox(height: 15.0.h),
-            InputField(
-              controller: TextEditingController(),
-              hint: "**********",
-              label: "Confirm Password",
-              validator: (value) => null,
-            ),
-            SizedBox(height: 15.0.h),
-            PrimaryButton(
-              onPressed: () =>
-                  Navigator.of(context).pushNamed(AppRoutes.dashboard),
-              buttonText: "SIGN UP",
-            ),
-            TextButton(
-              onPressed: () =>
-                  Navigator.of(context).pushNamed(AppRoutes.signIn),
-              child: Text(
-                "Have An Account? Sign In",
+              SizedBox(height: 30.0.h),
+              Text(
+                "SIGN UP",
                 style: TextStyle(
-                  fontSize: 16.0.sp,
-                  color: Colors.black,
+                  fontSize: 32.0.sp,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-            ),
-          ],
+              Text(
+                "Please sign up to enjoy all trakit features",
+                style: TextStyle(
+                  fontSize: 16.0.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              SizedBox(height: 20.0.h),
+              InputField(
+                controller: _usernameController,
+                hint: "john",
+                label: "Username",
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return "Username is required";
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 15.0.h),
+              InputField(
+                controller: _emailController,
+                hint: "johndoe@gmail.com",
+                label: "Email Address",
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return "Email is required";
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 15.0.h),
+              InputField(
+                controller: _passwordController,
+                hint: "**********",
+                label: "Password",
+                validator: (value) {
+                  if (value!.isEmpty && value.length < 6) {
+                    return "Password is required and must be at least 6 characters";
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 15.0.h),
+              InputField(
+                controller: _confirmController,
+                hint: "**********",
+                label: "Confirm Password",
+                validator: (value) {
+                  if (_passwordController.text != value) {
+                    return "Confirm Password does not match";
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 15.0.h),
+              PrimaryButton(
+                isLoading: _loading,
+                onPressed: _signUp,
+                buttonText: "SIGN UP",
+              ),
+              TextButton(
+                onPressed: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.signIn),
+                child: Text(
+                  "Have An Account? Sign In",
+                  style: TextStyle(
+                    fontSize: 16.0.sp,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

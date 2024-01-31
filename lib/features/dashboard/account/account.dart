@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:final_year_project_kiki/routes.dart';
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_switch/flutter_switch.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../widgets/more_items_widgets.dart';
 
@@ -138,7 +140,11 @@ class _AccountTabState extends State<AccountTab> {
               leadingIcon: SvgPicture.asset("assets/icons/signout.svg"),
               text: "Sign Out",
               suffix: const SizedBox(),
-              onPressed: () {},
+              onPressed: () {
+                Supabase.instance.client.auth.signOut();
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoutes.signIn, (route) => false);
+              },
             ),
           ],
         ),
