@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -59,7 +61,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               .pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false);
         } else {
           ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text("Sign up failed")));
+              .showSnackBar(const SnackBar(content: Text("Sign up failed")));
         }
       } catch (e) {
         AuthException authException = e as AuthException;

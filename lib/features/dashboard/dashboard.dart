@@ -1,3 +1,4 @@
+import 'package:final_year_project_kiki/features/dashboard/budgets/budgets.dart';
 import 'package:flashy_tab_bar2/flashy_tab_bar2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +28,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return _selectedIndex == 0
         ? const HomeTab()
         : _selectedIndex == 1
-            ? Container(color: Colors.red)
+            ? const BudgetTab()
             : _selectedIndex == 2
                 ? Container(color: Colors.blue)
                 : const AccountTab();

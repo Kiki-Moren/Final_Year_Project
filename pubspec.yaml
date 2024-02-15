@@ -22,9 +22,10 @@ dependencies:
   flutter_native_splash: ^2.3.7
   flashy_tab_bar2: ^0.0.6
   flutter_switch: ^0.3.2
-  fl_chart: ^0.66.1
+  fl_chart: ^0.66.2
   supabase: ^2.0.6
   supabase_flutter: ^2.3.1
+  percent_indicator: ^4.2.3
 
 dev_dependencies:
   flutter_test:

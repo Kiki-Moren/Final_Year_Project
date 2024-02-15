@@ -1,6 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../routes.dart';
@@ -32,21 +35,32 @@ class _SignInScreenState extends State<SignInScreen> {
         _loading = true;
       });
 
-      final response = await Supabase.instance.client.auth.signInWithPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
+      try {
+        final response = await Supabase.instance.client.auth.signInWithPassword(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
 
-      setState(() {
-        _loading = false;
-      });
+        setState(() {
+          _loading = false;
+        });
 
-      if (response.session != null) {
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false);
-      } else {
+        if (response.session != null) {
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false);
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text("Sign in failed")));
+        }
+      } catch (error) {
+        AuthException authException = error as AuthException;
+
+        setState(() {
+          _loading = false;
+        });
+        Logger().d(error);
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Sign in failed")));
+            .showSnackBar(SnackBar(content: Text(authException.message)));
       }
     }
   }
