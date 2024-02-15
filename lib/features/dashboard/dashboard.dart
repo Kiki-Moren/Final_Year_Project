@@ -1,4 +1,5 @@
 import 'package:final_year_project_kiki/features/dashboard/budgets/budgets.dart';
+import 'package:final_year_project_kiki/features/dashboard/converter/converter.dart';
 import 'package:flashy_tab_bar2/flashy_tab_bar2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         : _selectedIndex == 1
             ? const BudgetTab()
             : _selectedIndex == 2
-                ? Container(color: Colors.blue)
+                ? const CurrencyConverterTab()
                 : const AccountTab();
   }
 

@@ -84,7 +84,24 @@ class _HomeTabState extends State<HomeTab> {
       width: double.infinity,
       height: 200.h,
       child: LineChart(
-        LineChartData(),
+        LineChartData(
+          lineBarsData: [
+            LineChartBarData(
+              spots: [
+                FlSpot(0, 3),
+                FlSpot(1, 4),
+                FlSpot(2, 3.5),
+                FlSpot(3, 5),
+                FlSpot(4, 4),
+                FlSpot(5, 6),
+              ],
+              isCurved: true,
+              barWidth: 4,
+              isStrokeCapRound: true,
+              belowBarData: BarAreaData(show: false),
+            ),
+          ],
+        ),
       ),
     );
   }
