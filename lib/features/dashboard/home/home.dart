@@ -1,3 +1,4 @@
+import 'package:final_year_project_kiki/routes.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -187,44 +188,49 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   Widget _buildCreateNewBudgetButton() {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        image: const DecorationImage(
-          image: AssetImage("assets/images/create.png"),
-          fit: BoxFit.cover,
-        ),
-        borderRadius: BorderRadius.circular(20.0.r),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Create New Budget",
-                  style: TextStyle(
-                    fontSize: 24.0.sp,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 10.0.h),
-                Text(
-                  "Create a new budget to start saving",
-                  style: TextStyle(
-                    fontSize: 14.0.sp,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).pushNamed(AppRoutes.addBudget);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+          image: const DecorationImage(
+            image: AssetImage("assets/images/create.png"),
+            fit: BoxFit.cover,
           ),
-          SizedBox(width: 20.0.w),
-          SvgPicture.asset("assets/icons/money_bag.svg"),
-        ],
+          borderRadius: BorderRadius.circular(20.0.r),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Create New Budget",
+                    style: TextStyle(
+                      fontSize: 24.0.sp,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 10.0.h),
+                  Text(
+                    "Create a new budget to start saving",
+                    style: TextStyle(
+                      fontSize: 14.0.sp,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 20.0.w),
+            SvgPicture.asset("assets/icons/money_bag.svg"),
+          ],
+        ),
       ),
     );
   }
