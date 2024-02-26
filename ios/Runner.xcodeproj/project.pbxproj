@@ -625,6 +625,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = M3V9S2463N;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -693,6 +694,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 659DF249E3D27B93EEB38900 /* Pods-Runner.debug-development.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = M3V9S2463N;
 				PRODUCT_NAME = Runner;
 			};
 			name = "Debug-development";
@@ -701,6 +703,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E4612FC32D138823B2A85EEC /* Pods-Runner.profile-development.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = M3V9S2463N;
 				PRODUCT_NAME = Runner;
 			};
 			name = "Profile-development";
@@ -709,6 +712,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = D49840D9B8A79C3411BF148D /* Pods-Runner.release-development.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = M3V9S2463N;
 				PRODUCT_NAME = Runner;
 			};
 			name = "Release-development";
@@ -717,6 +721,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3C62BA5852CE3B98478355AE /* Pods-Runner.debug-staging.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = M3V9S2463N;
 				PRODUCT_NAME = Runner;
 			};
 			name = "Debug-staging";
@@ -725,6 +730,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 842CFA5BEB7B080ECCE14AFA /* Pods-Runner.profile-staging.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = M3V9S2463N;
 				PRODUCT_NAME = Runner;
 			};
 			name = "Profile-staging";
@@ -733,6 +739,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CB55B5B043660CD90F896E79 /* Pods-Runner.release-staging.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = M3V9S2463N;
 				PRODUCT_NAME = Runner;
 			};
 			name = "Release-staging";
@@ -741,6 +748,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = ECEB84590FCB98D61B4900C6 /* Pods-Runner.debug-production.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = M3V9S2463N;
 				PRODUCT_NAME = Runner;
 			};
 			name = "Debug-production";
@@ -749,6 +757,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = FFF61F886104B95CAEF80CD3 /* Pods-Runner.profile-production.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = M3V9S2463N;
 				PRODUCT_NAME = Runner;
 			};
 			name = "Profile-production";
@@ -757,6 +766,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = DA0E23252A8226C480E97819 /* Pods-Runner.release-production.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = M3V9S2463N;
 				PRODUCT_NAME = Runner;
 			};
 			name = "Release-production";
@@ -1296,6 +1306,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = M3V9S2463N;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1318,6 +1329,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = M3V9S2463N;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

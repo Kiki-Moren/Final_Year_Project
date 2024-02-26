@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'flavors.dart';
 import 'routes.dart';
 import 'utilities/methods.dart';
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   const App({Key? key}) : super(key: key);
 
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
@@ -23,7 +29,10 @@ class App extends StatelessWidget {
             primarySwatch:
                 AppMethods.createMaterialColor(const Color(0xFF165A4A)),
           ),
-          initialRoute: AppRoutes.authentication,
+          initialRoute:
+              Supabase.instance.client.auth.currentSession?.isExpired ?? true
+                  ? AppRoutes.authentication
+                  : AppRoutes.dashboard,
           routes: AppRoutes.routes,
         );
       },

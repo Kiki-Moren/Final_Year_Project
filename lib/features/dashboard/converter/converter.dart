@@ -54,12 +54,14 @@ class _CurrencyConverterTabState extends State<CurrencyConverterTab> {
         const DropDownField(
           data: ["USD", "NGN", "GBP"],
           hint: "Select From Currency",
+          selected: "USD",
           label: "From",
         ),
         SizedBox(height: 20.0.h),
         const DropDownField(
           data: ["USD", "NGN", "GBP"],
           hint: "Select From Currency",
+          selected: "USD",
           label: "To",
         ),
         SizedBox(height: 20.0.h),

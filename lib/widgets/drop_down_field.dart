@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 class DropDownField extends StatefulWidget {
   final String hint;
   final String label;
+  final String? selected;
   final List<String> data;
   final Widget? suffixIcon;
   final void Function(String?)? onChanged;
@@ -15,6 +16,7 @@ class DropDownField extends StatefulWidget {
     required this.hint,
     required this.label,
     required this.data,
+    required this.selected,
     this.validator,
     this.onChanged,
     this.suffixIcon,
@@ -25,8 +27,6 @@ class DropDownField extends StatefulWidget {
 }
 
 class _DropDownFieldState extends State<DropDownField> {
-  String? _selectedData;
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -42,7 +42,7 @@ class _DropDownFieldState extends State<DropDownField> {
         SizedBox(height: 6.h),
         DropdownButtonHideUnderline(
           child: DropdownButtonFormField<String>(
-            value: _selectedData,
+            value: widget.selected,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please select an option';
@@ -97,9 +97,6 @@ class _DropDownFieldState extends State<DropDownField> {
             ),
             iconSize: 24.0.w,
             onChanged: (String? newValue) {
-              setState(() {
-                _selectedData = newValue;
-              });
               widget.onChanged!(newValue);
             },
             selectedItemBuilder: (BuildContext context) {

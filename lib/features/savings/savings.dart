@@ -45,11 +45,13 @@ class _SavingBudgetScreenState extends State<SavingBudgetScreen> {
             const DropDownField(
               data: ["USD", "NGN", "GBP"],
               hint: "Select Currency",
+              selected: "USD",
               label: "Currency",
             ),
             SizedBox(height: 20.0.h),
             const DropDownField(
               data: ["USD", "NGN", "GBP"],
+              selected: "USD",
               hint: "Select Local Currency",
               label: "Local Currency",
             ),

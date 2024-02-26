@@ -3,6 +3,7 @@ import 'package:final_year_project_kiki/features/dashboard/converter/converter.d
 import 'package:flashy_tab_bar2/flashy_tab_bar2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'account/account.dart';
 import 'home/home.dart';
@@ -16,6 +17,26 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    _createWallet();
+    super.initState();
+  }
+
+  void _createWallet() async {
+    final savings = await Supabase.instance.client
+        .from('savings')
+        .select()
+        .eq('user_id', Supabase.instance.client.auth.currentUser!.id);
+
+    if (savings.isEmpty) {
+      await Supabase.instance.client.from('savings').upsert({
+        'user_id': Supabase.instance.client.auth.currentUser!.id,
+        'amount': 0,
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

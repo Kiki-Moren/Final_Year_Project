@@ -4,6 +4,7 @@ import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class BudgetTab extends StatefulWidget {
   const BudgetTab({super.key});
@@ -13,6 +14,8 @@ class BudgetTab extends StatefulWidget {
 }
 
 class _BudgetTabState extends State<BudgetTab> {
+  final _budgets = Supabase.instance.client.from('budgets').select();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,22 +68,24 @@ class _BudgetTabState extends State<BudgetTab> {
               ),
             ),
             SizedBox(height: 20.0.h),
-            _buildBudgetItem(
-              title: "Tuition",
-              amount: "30,000,000",
-              index: 0,
-            ),
-            SizedBox(height: 10.0.h),
-            _buildBudgetItem(
-              title: "Accommodation",
-              amount: "30,000,000",
-              index: 1,
-            ),
-            SizedBox(height: 10.0.h),
-            _buildBudgetItem(
-              title: "Books",
-              amount: "30,000,000",
-              index: 2,
+            FutureBuilder<List<Map<String, dynamic>>>(
+              future: _budgets,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const SizedBox();
+                }
+                final budgets = snapshot.data!;
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (ctx, idx) => _buildBudgetItem(
+                    budget: budgets[idx],
+                    index: idx,
+                  ),
+                  separatorBuilder: (ctx, idx) => SizedBox(height: 10.0.h),
+                  itemCount: budgets.length,
+                );
+              },
             ),
             SizedBox(height: 20.0.h),
             _buildBottomSection(),
@@ -119,12 +124,17 @@ class _BudgetTabState extends State<BudgetTab> {
   }
 
   Widget _buildBudgetItem({
-    required String title,
-    required String amount,
+    required Map<String, dynamic> budget,
     required int index,
   }) {
     return GestureDetector(
-      onTap: () => Navigator.of(context).pushNamed(AppRoutes.editBudget),
+      onTap: () async {
+        await Navigator.of(context).pushNamed(
+          AppRoutes.editBudget,
+          arguments: budget,
+        );
+        setState(() {});
+      },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20.0),
@@ -167,7 +177,7 @@ class _BudgetTabState extends State<BudgetTab> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        title,
+                        budget['name'],
                         style: TextStyle(
                           color: index % 2 != 0 ? Colors.black : Colors.white,
                           fontSize: 20.0.sp,
@@ -179,7 +189,7 @@ class _BudgetTabState extends State<BudgetTab> {
                   ),
                   SizedBox(height: 10.0.h),
                   Text(
-                    "0 / $amount GBP",
+                    "0 / ${budget['amount']} ${budget['currency']}",
                     style: TextStyle(
                       color: index % 2 != 0 ? Colors.black : Colors.white,
                       fontSize: 14.0.sp,
@@ -188,7 +198,7 @@ class _BudgetTabState extends State<BudgetTab> {
                   ),
                   SizedBox(height: 10.0.h),
                   LinearPercentIndicator(
-                    width: 200.0.w,
+                    width: 180.0.w,
                     lineHeight: 8.0.w,
                     percent: 0.5,
                     barRadius: Radius.circular(10.0.r),

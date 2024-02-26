@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
-  flutter_riverpod: ^2.4.4
+  flutter_riverpod: ^2.4.10
   flutter_screenutil: ^5.9.0
   logger: ^2.0.2+1
   url_launcher: ^6.2.0
