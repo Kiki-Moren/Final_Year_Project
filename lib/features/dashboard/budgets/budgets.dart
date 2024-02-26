@@ -14,7 +14,27 @@ class BudgetTab extends StatefulWidget {
 }
 
 class _BudgetTabState extends State<BudgetTab> {
-  final _budgets = Supabase.instance.client.from('budgets').select();
+  final _budgets =
+      Supabase.instance.client.from('budgets').stream(primaryKey: ['id']);
+
+  final _savings = Supabase.instance.client
+      .from('savings')
+      .stream(primaryKey: ['id']).eq(
+          'user_id', Supabase.instance.client.auth.currentUser!.id);
+
+  double _calculatePercentage({
+    required double amount,
+    required double total,
+  }) {
+    return amount / total * 10;
+  }
+
+  double _calculateAmountLeft({
+    required double amount,
+    required double total,
+  }) {
+    return total - amount;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,8 +88,8 @@ class _BudgetTabState extends State<BudgetTab> {
               ),
             ),
             SizedBox(height: 20.0.h),
-            FutureBuilder<List<Map<String, dynamic>>>(
-              future: _budgets,
+            StreamBuilder(
+              stream: _budgets,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const SizedBox();
@@ -188,32 +208,68 @@ class _BudgetTabState extends State<BudgetTab> {
                     ],
                   ),
                   SizedBox(height: 10.0.h),
-                  Text(
-                    "0 / ${budget['amount']} ${budget['currency']}",
-                    style: TextStyle(
-                      color: index % 2 != 0 ? Colors.black : Colors.white,
-                      fontSize: 14.0.sp,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
+                  StreamBuilder(
+                      stream: _savings,
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const SizedBox();
+                        }
+                        final saving = snapshot.data!.first;
+                        return Text(
+                          "${saving['amount']} / ${budget['amount']} ${budget['currency']}",
+                          style: TextStyle(
+                            color: index % 2 != 0 ? Colors.black : Colors.white,
+                            fontSize: 14.0.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        );
+                      }),
                   SizedBox(height: 10.0.h),
-                  LinearPercentIndicator(
-                    width: 180.0.w,
-                    lineHeight: 8.0.w,
-                    percent: 0.5,
-                    barRadius: Radius.circular(10.0.r),
-                    backgroundColor: Colors.grey,
-                    progressColor: Colors.blue,
-                  ),
+                  StreamBuilder(
+                      stream: _savings,
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const SizedBox();
+                        }
+
+                        final saving = snapshot.data!.first;
+                        final percentage = _calculatePercentage(
+                          amount: double.parse(saving['amount'].toString()),
+                          total: double.parse(budget['amount'].toString()),
+                        );
+
+                        return LinearPercentIndicator(
+                          width: 180.0.w,
+                          lineHeight: 8.0.w,
+                          percent: percentage,
+                          barRadius: Radius.circular(10.0.r),
+                          backgroundColor: Colors.grey,
+                          progressColor: Colors.blue,
+                        );
+                      }),
                   SizedBox(height: 10.0.h),
-                  Text(
-                    "You need 15,000,000 GPB more for tuition",
-                    style: TextStyle(
-                      color: index % 2 != 0 ? Colors.black : Colors.white,
-                      fontSize: 14.0.sp,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
+                  StreamBuilder(
+                      stream: _savings,
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const SizedBox();
+                        }
+
+                        final saving = snapshot.data!.first;
+                        final amountLeft = _calculateAmountLeft(
+                          amount: double.parse(saving['amount'].toString()),
+                          total: double.parse(budget['amount'].toString()),
+                        );
+
+                        return Text(
+                          "You need $amountLeft ${budget['currency']} more for tuition",
+                          style: TextStyle(
+                            color: index % 2 != 0 ? Colors.black : Colors.white,
+                            fontSize: 14.0.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        );
+                      }),
                 ],
               ),
             ),
@@ -247,13 +303,22 @@ class _BudgetTabState extends State<BudgetTab> {
               ),
             ),
             SizedBox(height: 20.0.h),
-            Text(
-              "#5000000",
-              style: TextStyle(
-                fontSize: 24.0.sp,
-                fontWeight: FontWeight.w400,
-                color: Colors.white,
-              ),
+            StreamBuilder(
+              stream: _savings,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const SizedBox();
+                }
+                final saving = snapshot.data!.first;
+                return Text(
+                  '₦${saving['amount'].toString()}',
+                  style: TextStyle(
+                    fontSize: 24.0.sp,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                  ),
+                );
+              },
             ),
             SizedBox(height: 10.0.h),
             Row(

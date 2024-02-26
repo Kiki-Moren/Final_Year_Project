@@ -1,3 +1,4 @@
+import 'package:final_year_project_kiki/routes.dart';
 import 'package:final_year_project_kiki/widgets/drop_down_field.dart';
 import 'package:final_year_project_kiki/widgets/input_field.dart';
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
@@ -39,7 +40,8 @@ class _CurrencyConverterTabState extends State<CurrencyConverterTab> {
             _buildExchangeRate(),
             SizedBox(height: 20.0.h),
             PrimaryButton(
-              onPressed: () {},
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.addBudget),
               buttonText: 'Create A Budget',
             ),
           ],
@@ -100,7 +102,7 @@ class _CurrencyConverterTabState extends State<CurrencyConverterTab> {
         LineChartData(
           lineBarsData: [
             LineChartBarData(
-              spots: [
+              spots: const [
                 FlSpot(0, 3),
                 FlSpot(1, 4),
                 FlSpot(2, 3.5),

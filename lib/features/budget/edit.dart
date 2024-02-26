@@ -5,6 +5,7 @@ import 'package:final_year_project_kiki/widgets/input_field.dart';
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EditBudgetScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _EditBudgetScreenState extends State<EditBudgetScreen> {
   final _amountController = TextEditingController();
   String? _currency;
   bool _loading = false;
+  bool _loadingDelete = false;
 
   @override
   void initState() {
@@ -44,9 +46,7 @@ class _EditBudgetScreenState extends State<EditBudgetScreen> {
   }
 
   void _update() async {
-    print('here');
     if (_formKey.currentState!.validate()) {
-      print('here2');
       setState(() {
         _loading = true;
       });
@@ -70,6 +70,31 @@ class _EditBudgetScreenState extends State<EditBudgetScreen> {
         ),
       );
     }
+  }
+
+  void _delete() async {
+    setState(() {
+      _loadingDelete = true;
+    });
+
+    // delete budget from database
+    await Supabase.instance.client
+        .from('budgets')
+        .delete()
+        .eq('id', budget!['id']);
+
+    setState(() {
+      _loadingDelete = false;
+    });
+
+    // show success message and clear form
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Budget deleted successfully"),
+        backgroundColor: Colors.green,
+      ),
+    );
+    Navigator.pop(context);
   }
 
   @override
@@ -147,14 +172,19 @@ class _EditBudgetScreenState extends State<EditBudgetScreen> {
               ),
               SizedBox(height: 20.0.h),
               TextButton(
-                onPressed: () {},
-                child: const Text(
-                  "Delete Budget",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
+                onPressed: _delete,
+                child: _loadingDelete
+                    ? LoadingAnimationWidget.inkDrop(
+                        color: Colors.white,
+                        size: 18.0.w,
+                      )
+                    : const Text(
+                        "Delete Budget",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
               ),
             ],
           ),

@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -12,6 +13,15 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
+  final _savings = Supabase.instance.client
+      .from('savings')
+      .stream(primaryKey: ['id']).eq(
+          'user_id', Supabase.instance.client.auth.currentUser!.id);
+
+  final _user = Supabase.instance.client
+      .from('users')
+      .stream(primaryKey: ['id']).eq(
+          'user_id', Supabase.instance.client.auth.currentUser!.id);
   @override
   Widget build(BuildContext context) {
     return Scaffold(body: _buildBody());
@@ -23,12 +33,21 @@ class _HomeTabState extends State<HomeTab> {
         padding: const EdgeInsets.all(20.0),
         child: ListView(
           children: [
-            Text(
-              "Hello Kiki,",
-              style: TextStyle(
-                fontSize: 24.0.sp,
-                fontWeight: FontWeight.w400,
-              ),
+            StreamBuilder(
+              stream: _user,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const SizedBox();
+                }
+                final user = snapshot.data!.first;
+                return Text(
+                  "Hello ${user['username']},",
+                  style: TextStyle(
+                    fontSize: 24.0.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
+                );
+              },
             ),
             SizedBox(height: 20.0.h),
             _buildTotalSavingsContainer(),
@@ -236,51 +255,63 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   Widget _buildTotalSavingsContainer() {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        image: const DecorationImage(
-          image: AssetImage("assets/images/total_savings_bg.png"),
-          fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () => Navigator.of(context).pushNamed(AppRoutes.topUpSaving),
+      child: Container(
+        padding: const EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+          image: const DecorationImage(
+            image: AssetImage("assets/images/total_savings_bg.png"),
+            fit: BoxFit.cover,
+          ),
+          borderRadius: BorderRadius.circular(20.0.r),
         ),
-        borderRadius: BorderRadius.circular(20.0.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Total Savings",
-            style: TextStyle(
-              fontSize: 24.0.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.white,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Total Savings",
+              style: TextStyle(
+                fontSize: 24.0.sp,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
             ),
-          ),
-          SizedBox(height: 20.0.h),
-          Text(
-            "#5000000",
-            style: TextStyle(
-              fontSize: 24.0.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 10.0.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: () {},
-                child: const Text(
-                  'Edit',
+            SizedBox(height: 20.0.h),
+            StreamBuilder(
+              stream: _savings,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const SizedBox();
+                }
+                final saving = snapshot.data!.first;
+                return Text(
+                  '₦${saving['amount'].toString()}',
                   style: TextStyle(
+                    fontSize: 24.0.sp,
+                    fontWeight: FontWeight.w400,
                     color: Colors.white,
                   ),
+                );
+              },
+            ),
+            SizedBox(height: 10.0.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () {},
+                  child: const Text(
+                    'Edit',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
