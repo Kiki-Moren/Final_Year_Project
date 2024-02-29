@@ -1,27 +1,32 @@
 import 'package:final_year_project_kiki/features/dashboard/budgets/budgets.dart';
 import 'package:final_year_project_kiki/features/dashboard/converter/converter.dart';
+import 'package:final_year_project_kiki/services/app.dart';
 import 'package:flashy_tab_bar2/flashy_tab_bar2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'account/account.dart';
 import 'home/home.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   int _selectedIndex = 0;
 
   @override
   void initState() {
     _createWallet();
     super.initState();
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      ref.read(appApiProvider).getCurrencies(ref: ref, onError: (_) {});
+    });
   }
 
   void _createWallet() async {

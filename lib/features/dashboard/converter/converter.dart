@@ -1,19 +1,66 @@
 import 'package:final_year_project_kiki/routes.dart';
+import 'package:final_year_project_kiki/services/app.dart';
+import 'package:final_year_project_kiki/state/app_state.dart';
 import 'package:final_year_project_kiki/widgets/drop_down_field.dart';
 import 'package:final_year_project_kiki/widgets/input_field.dart';
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:logger/logger.dart';
 
-class CurrencyConverterTab extends StatefulWidget {
+class CurrencyConverterTab extends ConsumerStatefulWidget {
   const CurrencyConverterTab({super.key});
 
   @override
-  State<CurrencyConverterTab> createState() => _CurrencyConverterTabState();
+  ConsumerState<CurrencyConverterTab> createState() =>
+      _CurrencyConverterTabState();
 }
 
-class _CurrencyConverterTabState extends State<CurrencyConverterTab> {
+class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
+  final _amountController = TextEditingController();
+  String? _fromCurrency;
+  String? _toCurrency;
+  bool _isLoading = false;
+  double? _convertedAmount;
+
+  void _convertCurrency() async {
+    Logger().d("Converting currency");
+    Logger().d(_toCurrency);
+    Logger().d(_fromCurrency);
+    Logger().d(_amountController.text);
+
+    if (_toCurrency == null ||
+        _fromCurrency == null ||
+        _amountController.text.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    double amount = await ref.read(appApiProvider).getConversionValue(
+          fromCurrency: _fromCurrency!,
+          toCurrency: _toCurrency!,
+          amount: double.parse(_amountController.text),
+          ref: ref,
+          onError: (_) {},
+        );
+    setState(() {
+      _isLoading = false;
+      _convertedAmount = amount;
+    });
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(body: _buildBody());
@@ -52,28 +99,62 @@ class _CurrencyConverterTabState extends State<CurrencyConverterTab> {
 
   Widget _buildForm() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const DropDownField(
-          data: ["USD", "NGN", "GBP"],
+        DropDownField(
+          data: ref.watch(currencies).map((e) => e.currency!).toList(),
           hint: "Select From Currency",
-          selected: "USD",
+          selected: _fromCurrency,
           label: "From",
+          onChanged: (String? value) {
+            setState(() {
+              _fromCurrency = value;
+            });
+          },
         ),
         SizedBox(height: 20.0.h),
-        const DropDownField(
-          data: ["USD", "NGN", "GBP"],
-          hint: "Select From Currency",
-          selected: "USD",
+        DropDownField(
+          data: ref.watch(currencies).map((e) => e.currency!).toList(),
+          hint: "Select To Currency",
+          selected: _toCurrency,
           label: "To",
+          onChanged: (String? value) {
+            setState(() {
+              _toCurrency = value;
+            });
+          },
         ),
         SizedBox(height: 20.0.h),
         InputField(
-          controller: TextEditingController(),
+          controller: _amountController,
           hint: "Enter Amount to Convert",
-          validator: (String? name) => null,
+          textInputType: TextInputType.number,
+          validator: (String? value) {
+            if (value == null || value.isEmpty) {
+              return "Amount is required";
+            }
+            return null;
+          },
+          suffixIcon: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: _isLoading
+                ? LoadingAnimationWidget.discreteCircle(
+                    color: const Color(0xFF165A4A), size: 30.0)
+                : null,
+          ),
+          onChanged: (String? value) {
+            _convertCurrency();
+          },
           label: "Amount",
         ),
-        const Text("1 NGN = 0.50 GBP"),
+        if (_convertedAmount != null)
+          Text(
+            "1 $_fromCurrency = $_convertedAmount $_toCurrency",
+            style: TextStyle(
+              fontSize: 16.0.sp,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
       ],
     );
   }
