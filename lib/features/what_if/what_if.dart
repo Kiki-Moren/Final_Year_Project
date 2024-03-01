@@ -32,13 +32,17 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
       .stream(primaryKey: ['id']).eq(
           'user_id', Supabase.instance.client.auth.currentUser!.id);
 
-  double _calculatePercentage(
-          {required double amount, required double total}) =>
-      amount / total * 10;
+  double _calculatePercentage({required double amount, required double total}) {
+    if (amount > total) return 1;
 
-  double _calculateAmountLeft(
-          {required double amount, required double total}) =>
-      total - amount;
+    return amount / total * 10;
+  }
+
+  double _calculateAmountLeft({required double amount, required double total}) {
+    if (amount > total) return 0;
+
+    return total - amount;
+  }
 
   @override
   void dispose() {

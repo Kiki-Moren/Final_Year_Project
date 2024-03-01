@@ -1,19 +1,21 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:final_year_project_kiki/routes.dart';
+import 'package:final_year_project_kiki/services/app.dart';
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class BudgetTab extends StatefulWidget {
+class BudgetTab extends ConsumerStatefulWidget {
   const BudgetTab({super.key});
 
   @override
-  State<BudgetTab> createState() => _BudgetTabState();
+  ConsumerState<BudgetTab> createState() => _BudgetTabState();
 }
 
-class _BudgetTabState extends State<BudgetTab> {
+class _BudgetTabState extends ConsumerState<BudgetTab> {
   final _budgets =
       Supabase.instance.client.from('budgets').stream(primaryKey: ['id']);
 
@@ -84,12 +86,28 @@ class _BudgetTabState extends State<BudgetTab> {
                 fontWeight: FontWeight.w400,
               ),
             ),
-            Text(
-              "Rate Now: 1 GBP = 1,500 NGN",
-              style: TextStyle(
-                fontSize: 16.0.sp,
-                fontWeight: FontWeight.w400,
-              ),
+            FutureBuilder(
+              future: ref.read(appApiProvider).getExchangeRate(
+                    fromCurrency: "GBP",
+                    toCurrency: "NGN",
+                    ref: ref,
+                    onError: (_) {},
+                  ),
+              builder: (ctx, snapshot) {
+                if (!snapshot.hasData) {
+                  return const SizedBox();
+                }
+
+                final rate = snapshot.data as double;
+
+                return Text(
+                  "Rate Now: 1 GBP = ${rate.toStringAsFixed(2)} NGN",
+                  style: TextStyle(
+                    fontSize: 16.0.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
+                );
+              },
             ),
             SizedBox(height: 20.0.h),
             StreamBuilder(
