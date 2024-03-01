@@ -120,7 +120,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Exchange Rate",
+          "Exchange Rate (USD - NGN)",
           style: TextStyle(
             fontSize: 24.0.sp,
             fontWeight: FontWeight.w400,
