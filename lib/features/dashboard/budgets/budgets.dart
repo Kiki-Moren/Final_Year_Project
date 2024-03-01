@@ -42,6 +42,20 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     return total - amount;
   }
 
+  Future<double> _calculateCurrentAmountInSavedCurrency({
+    required double amount,
+    required String currency,
+  }) async {
+    final rate = await ref.read(appApiProvider).getExchangeRate(
+          fromCurrency: "NGN",
+          toCurrency: currency,
+          ref: ref,
+          onError: (_) {},
+        );
+
+    return amount * rate;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -239,14 +253,30 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
                           return const SizedBox();
                         }
                         final saving = snapshot.data!.first;
-                        return Text(
-                          "${saving['amount']} / ${budget['amount']} ${budget['currency']}",
-                          style: TextStyle(
-                            color: index % 2 != 0 ? Colors.black : Colors.white,
-                            fontSize: 14.0.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
+                        final balance = _calculateCurrentAmountInSavedCurrency(
+                          amount: double.parse(saving['amount'].toString()),
+                          currency: budget['currency'],
                         );
+                        return FutureBuilder(
+                            future: balance,
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const SizedBox();
+                              }
+
+                              final balanc = snapshot.data as double;
+
+                              return Text(
+                                "${balanc.toStringAsFixed(2)} / ${budget['amount']} ${budget['currency']}",
+                                style: TextStyle(
+                                  color: index % 2 != 0
+                                      ? Colors.black
+                                      : Colors.white,
+                                  fontSize: 14.0.sp,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              );
+                            });
                       }),
                   SizedBox(height: 10.0.h),
                   StreamBuilder(
@@ -285,14 +315,25 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
                           total: double.parse(budget['amount'].toString()),
                         );
 
-                        return Text(
-                          "You need $amountLeft ${budget['currency']} more for tuition",
-                          style: TextStyle(
-                            color: index % 2 != 0 ? Colors.black : Colors.white,
-                            fontSize: 14.0.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
+                        final balance = _calculateCurrentAmountInSavedCurrency(
+                          amount: amountLeft,
+                          currency: budget['currency'],
                         );
+
+                        return FutureBuilder(
+                            future: balance,
+                            builder: (context, snapshot) {
+                              return Text(
+                                "You need ${snapshot.data} ${budget['currency']} more for tuition",
+                                style: TextStyle(
+                                  color: index % 2 != 0
+                                      ? Colors.black
+                                      : Colors.white,
+                                  fontSize: 14.0.sp,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              );
+                            });
                       }),
                 ],
               ),
