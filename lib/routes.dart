@@ -4,6 +4,7 @@ import 'package:final_year_project_kiki/features/budget/add.dart';
 import 'package:final_year_project_kiki/features/budget/edit.dart';
 import 'package:final_year_project_kiki/features/profile/profile.dart';
 import 'package:final_year_project_kiki/features/savings/savings.dart';
+import 'package:final_year_project_kiki/features/what_if/what_if.dart';
 import 'package:flutter/material.dart';
 
 import 'features/authentication/authentication.dart';
@@ -23,6 +24,7 @@ class AppRoutes {
     profile: (context) => const ProfileScreen(),
     initiateResetPassword: (context) => const InitiatePasswordResetScreen(),
     resetPassword: (context) => const ResetPasswordScreen(),
+    whatIf: (context) => const WhatIfScreen(),
   };
 
   static String authentication = '/';
@@ -35,4 +37,5 @@ class AppRoutes {
   static String profile = '/profile';
   static String initiateResetPassword = '/initiate-reset-password';
   static String resetPassword = '/reset-password';
+  static String whatIf = '/whatIf';
 }

@@ -58,6 +58,32 @@ class AppService {
     }
   }
 
+  Future<double> getExchangeRate({
+    required String fromCurrency,
+    required String toCurrency,
+    required WidgetRef ref,
+    required void Function(String message) onError,
+  }) async {
+    try {
+      var response = await network.get(
+        'https://api.api-ninjas.com/v1/exchangerate?pair=${fromCurrency}_$toCurrency',
+        incomingHeaders: {
+          "X-Api-Key": "gqnmSOwaMx1vKRy5cNoS3w==DH77dB3J7e3cZu7b"
+        },
+      );
+
+      Logger().d(response);
+
+      return response['exchange_rate'];
+    } on CustomException catch (e) {
+      onError(e.toString());
+      return 0.0;
+    } catch (e) {
+      onError('Network error, check your network connection');
+      return 0.0;
+    }
+  }
+
   Future<String> getBusinessQuote({
     required WidgetRef ref,
     required void Function(String message) onError,

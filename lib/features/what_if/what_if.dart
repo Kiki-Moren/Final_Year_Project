@@ -1,19 +1,29 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:final_year_project_kiki/routes.dart';
-import 'package:final_year_project_kiki/widgets/primary_button.dart';
+import 'package:final_year_project_kiki/services/app.dart';
+import 'package:final_year_project_kiki/state/app_state.dart';
+import 'package:final_year_project_kiki/widgets/drop_down_field.dart';
+import 'package:final_year_project_kiki/widgets/input_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class BudgetTab extends StatefulWidget {
-  const BudgetTab({super.key});
+class WhatIfScreen extends ConsumerStatefulWidget {
+  const WhatIfScreen({super.key});
 
   @override
-  State<BudgetTab> createState() => _BudgetTabState();
+  ConsumerState<WhatIfScreen> createState() => _WhatIfScreenState();
 }
 
-class _BudgetTabState extends State<BudgetTab> {
+class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
+  final _percentageController = TextEditingController();
+  String? _selectedCurrency;
+  bool _isLoading = false;
+  double? _rate;
   final _budgets =
       Supabase.instance.client.from('budgets').stream(primaryKey: ['id']);
 
@@ -22,125 +32,139 @@ class _BudgetTabState extends State<BudgetTab> {
       .stream(primaryKey: ['id']).eq(
           'user_id', Supabase.instance.client.auth.currentUser!.id);
 
-  double _calculatePercentage({
-    required double amount,
-    required double total,
-  }) {
-    return amount / total * 10;
+  double _calculatePercentage(
+          {required double amount, required double total}) =>
+      amount / total * 10;
+
+  double _calculateAmountLeft(
+          {required double amount, required double total}) =>
+      total - amount;
+
+  @override
+  void dispose() {
+    _percentageController.dispose();
+    super.dispose();
   }
 
-  double _calculateAmountLeft({
-    required double amount,
-    required double total,
-  }) {
-    return total - amount;
+  void _getExchangeRate() async {
+    if (_percentageController.text.isEmpty || _selectedCurrency == null) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final appService = ref.read(appApiProvider);
+    final rate = await appService.getExchangeRate(
+      fromCurrency: _selectedCurrency!,
+      toCurrency: "NGN",
+      ref: ref,
+      onError: (String message) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      },
+    );
+
+    setState(() {
+      _isLoading = false;
+      _rate = rate * double.parse(_percentageController.text);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildBody(),
-      floatingActionButton: IconButton(
-        onPressed: () => Navigator.of(context).pushNamed(AppRoutes.addBudget),
-        icon: Container(
-          padding: const EdgeInsets.all(10.0),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
+      appBar: AppBar(
+        backgroundColor: const Color(0xffD8EBE9),
+        title: const Text(
+          "What If?",
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w400,
           ),
-          child: const Icon(Icons.add),
         ),
-        iconSize: 30.0,
       ),
+      body: _buildBody(),
     );
   }
 
   Widget _buildBody() {
     return SafeArea(
-      child: Container(
+      child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: ListView(
+        child: Column(
           children: [
-            Center(
-              child: Text(
-                "My Goals",
-                style: TextStyle(
-                  fontSize: 24.0.sp,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+            InputField(
+              controller: _percentageController,
+              hint: "percentage",
+              validator: (String? value) => null,
+              textInputType: TextInputType.number,
+              onChanged: (String? value) => _getExchangeRate(),
+              label: "What if rate is down by (in percentage)",
             ),
             SizedBox(height: 20.0.h),
-            _buildTotalSavingsContainer(),
-            SizedBox(height: 20.0.h),
-            Text(
-              "Your Budget Today:",
-              style: TextStyle(
-                fontSize: 24.0.sp,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            Text(
-              "Rate Now: 1 GBP = 1,500 NGN",
-              style: TextStyle(
-                fontSize: 16.0.sp,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            SizedBox(height: 20.0.h),
-            StreamBuilder(
-              stream: _budgets,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const SizedBox();
-                }
-                final budgets = snapshot.data!;
-                return ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (ctx, idx) => _buildBudgetItem(
-                    budget: budgets[idx],
-                    index: idx,
-                  ),
-                  separatorBuilder: (ctx, idx) => SizedBox(height: 10.0.h),
-                  itemCount: budgets.length,
-                );
+            DropDownField(
+              data: ref.watch(currencies).map((e) => e.currency!).toList(),
+              hint: "Select Base Currency",
+              selected: _selectedCurrency,
+              label: "Base Currency",
+              onChanged: (String? value) {
+                setState(() {
+                  _selectedCurrency = value;
+                });
+                _getExchangeRate();
               },
             ),
             SizedBox(height: 20.0.h),
-            _buildBottomSection(),
+            _isLoading
+                ? Center(
+                    child: LoadingAnimationWidget.discreteCircle(
+                      color: const Color(0xff165A4A),
+                      size: 30.0.w,
+                    ),
+                  )
+                : Row(
+                    children: [
+                      Text(
+                        "Rate will be: 1 ${_selectedCurrency ?? ""} = $_rate NGN",
+                        style: TextStyle(
+                          fontSize: 16.0.sp,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      SizedBox(width: 10.0.w),
+                      SvgPicture.asset("assets/icons/sad.svg"),
+                    ],
+                  ),
+            SizedBox(height: 20.0.h),
+            Expanded(
+              child: StreamBuilder(
+                stream: _budgets,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const SizedBox();
+                  }
+                  final budgets = snapshot.data!;
+                  return ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (ctx, idx) => _buildBudgetItem(
+                      budget: budgets[idx],
+                      index: idx,
+                    ),
+                    separatorBuilder: (ctx, idx) => SizedBox(height: 10.0.h),
+                    itemCount: budgets.length,
+                  );
+                },
+              ),
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildBottomSection() {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        color: const Color(0xff82B9AE),
-        borderRadius: BorderRadius.circular(20.0.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "But the exchange can and this will affect your budget",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 15.0.sp,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-          SizedBox(height: 20.0.h),
-          PrimaryButton(
-            onPressed: () {
-              Navigator.of(context).pushNamed(AppRoutes.whatIf);
-            },
-            buttonText: "Find Out More",
-          ),
-        ],
       ),
     );
   }
@@ -274,68 +298,6 @@ class _BudgetTabState extends State<BudgetTab> {
                       }),
                 ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTotalSavingsContainer() {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).pushNamed(AppRoutes.topUpSaving),
-      child: Container(
-        padding: const EdgeInsets.all(20.0),
-        decoration: BoxDecoration(
-          image: const DecorationImage(
-            image: AssetImage("assets/images/total_savings_bg.png"),
-            fit: BoxFit.cover,
-          ),
-          borderRadius: BorderRadius.circular(20.0.r),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Total Savings",
-              style: TextStyle(
-                fontSize: 24.0.sp,
-                fontWeight: FontWeight.w400,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 20.0.h),
-            StreamBuilder(
-              stream: _savings,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const SizedBox();
-                }
-                final saving = snapshot.data!.first;
-                return Text(
-                  '₦${saving['amount'].toString()}',
-                  style: TextStyle(
-                    fontSize: 24.0.sp,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white,
-                  ),
-                );
-              },
-            ),
-            SizedBox(height: 10.0.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {},
-                  child: const Text(
-                    'Edit',
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
             ),
           ],
         ),
