@@ -1,18 +1,21 @@
 import 'package:final_year_project_kiki/routes.dart';
+import 'package:final_year_project_kiki/services/app.dart';
+import 'package:final_year_project_kiki/state/data.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class HomeTab extends StatefulWidget {
+class HomeTab extends ConsumerStatefulWidget {
   const HomeTab({super.key});
 
   @override
-  State<HomeTab> createState() => _HomeTabState();
+  ConsumerState<HomeTab> createState() => _HomeTabState();
 }
 
-class _HomeTabState extends State<HomeTab> {
+class _HomeTabState extends ConsumerState<HomeTab> {
   final _savings = Supabase.instance.client
       .from('savings')
       .stream(primaryKey: ['id']).eq(
@@ -58,29 +61,51 @@ class _HomeTabState extends State<HomeTab> {
             SizedBox(height: 20.0.h),
             _buildExchangeRate(),
             SizedBox(height: 20.0.h),
-            Text(
-              "Did You Know?",
-              style: TextStyle(
-                fontSize: 24.0.sp,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            Container(
-              color: const Color(0xff165A4A),
-              padding: const EdgeInsets.all(20.0),
-              child: Text(
-                "Did you know that NGN fell more than 50% against GBP last year",
-                style: TextStyle(
-                  fontSize: 14.0.sp,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+            _buildQuoteSection(),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildQuoteSection() {
+    return FutureBuilder(
+        future: ref.read(appApiProvider).getBusinessQuote(
+              ref: ref,
+              onError: (_) {},
+            ),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const SizedBox();
+          }
+
+          String quote = snapshot.data.toString();
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Did You Know?",
+                style: TextStyle(
+                  fontSize: 24.0.sp,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              Container(
+                color: const Color(0xff165A4A),
+                padding: const EdgeInsets.all(20.0),
+                child: Text(
+                  quote,
+                  style: TextStyle(
+                    fontSize: 14.0.sp,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          );
+        });
   }
 
   Widget _buildExchangeRate() {
@@ -100,25 +125,50 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   Widget _buildChart() {
+    var exchangeRates = Data.exchangeRates
+        .firstWhere((element) => element["currency"] == "NGN")["rates"]
+        .map((e) => e["rate"])
+        .toList();
+
+    var spots = <FlSpot>[];
+
+    for (int i = 0; i < exchangeRates.length; i++) {
+      spots.add(FlSpot(i.toDouble(), exchangeRates[i].toDouble()));
+    }
+
     return SizedBox(
       width: double.infinity,
       height: 200.h,
       child: LineChart(
         LineChartData(
+          titlesData: const FlTitlesData(
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          borderData: FlBorderData(
+            border: const Border(
+              left: BorderSide(
+                color: Color(0xFF165A4A),
+                width: 2,
+              ),
+              bottom: BorderSide(
+                color: Color(0xFF165A4A),
+                width: 2,
+              ),
+            ),
+          ),
+          gridData: const FlGridData(show: false),
           lineBarsData: [
             LineChartBarData(
-              spots: [
-                FlSpot(0, 3),
-                FlSpot(1, 4),
-                FlSpot(2, 3.5),
-                FlSpot(3, 5),
-                FlSpot(4, 4),
-                FlSpot(5, 6),
-              ],
+              // spots: const [
+              //   FlSpot(1, Data.exchangeRates),
+              // ],
+              spots: spots,
               isCurved: true,
               barWidth: 4,
               isStrokeCapRound: true,
-              belowBarData: BarAreaData(show: false),
+              // belowBarData: BarAreaData(show: false),
+              // dotData: const FlDotData(show: false),
             ),
           ],
         ),

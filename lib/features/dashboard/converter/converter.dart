@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:final_year_project_kiki/routes.dart';
 import 'package:final_year_project_kiki/services/app.dart';
 import 'package:final_year_project_kiki/state/app_state.dart';
+import 'package:final_year_project_kiki/state/data.dart';
 import 'package:final_year_project_kiki/widgets/drop_down_field.dart';
 import 'package:final_year_project_kiki/widgets/input_field.dart';
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
@@ -27,11 +30,6 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
   double? _convertedAmount;
 
   void _convertCurrency() async {
-    Logger().d("Converting currency");
-    Logger().d(_toCurrency);
-    Logger().d(_fromCurrency);
-    Logger().d(_amountController.text);
-
     if (_toCurrency == null ||
         _fromCurrency == null ||
         _amountController.text.isEmpty) {
@@ -170,31 +168,57 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
             fontWeight: FontWeight.w400,
           ),
         ),
-        _buildChart(),
+        if (_convertedAmount != null) _buildChart(),
       ],
     );
   }
 
   Widget _buildChart() {
+    var exchangeRates = Data.exchangeRates
+        .firstWhere((element) => element["currency"] == _toCurrency)["rates"]
+        .map((e) => e["rate"])
+        .toList();
+    Logger().d(exchangeRates);
+
+    var spots = <FlSpot>[];
+
+    for (int i = 0; i < exchangeRates.length; i++) {
+      spots.add(FlSpot(i.toDouble(), exchangeRates[i].toDouble()));
+    }
+
     return SizedBox(
       width: double.infinity,
       height: 200.h,
       child: LineChart(
         LineChartData(
+          titlesData: const FlTitlesData(
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          borderData: FlBorderData(
+            border: const Border(
+              left: BorderSide(
+                color: Color(0xFF165A4A),
+                width: 2,
+              ),
+              bottom: BorderSide(
+                color: Color(0xFF165A4A),
+                width: 2,
+              ),
+            ),
+          ),
+          gridData: const FlGridData(show: false),
           lineBarsData: [
             LineChartBarData(
-              spots: const [
-                FlSpot(0, 3),
-                FlSpot(1, 4),
-                FlSpot(2, 3.5),
-                FlSpot(3, 5),
-                FlSpot(4, 4),
-                FlSpot(5, 6),
-              ],
+              // spots: const [
+              //   FlSpot(1, Data.exchangeRates),
+              // ],
+              spots: spots,
               isCurved: true,
               barWidth: 4,
               isStrokeCapRound: true,
-              belowBarData: BarAreaData(show: false),
+              // belowBarData: BarAreaData(show: false),
+              // dotData: const FlDotData(show: false),
             ),
           ],
         ),
