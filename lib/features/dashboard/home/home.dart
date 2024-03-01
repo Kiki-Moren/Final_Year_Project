@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeTab extends ConsumerStatefulWidget {
@@ -25,6 +26,12 @@ class _HomeTabState extends ConsumerState<HomeTab> {
       .from('users')
       .stream(primaryKey: ['id']).eq(
           'user_id', Supabase.instance.client.auth.currentUser!.id);
+
+  final _activities = Supabase.instance.client
+      .from('activities')
+      .stream(primaryKey: ['id']).eq(
+          'user_id', Supabase.instance.client.auth.currentUser!.id);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(body: _buildBody());
@@ -44,7 +51,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                 }
                 final user = snapshot.data!.first;
                 return Text(
-                  "Hello ${user['username']},",
+                  "Hello ${user['first_name']},",
                   style: TextStyle(
                     fontSize: 24.0.sp,
                     fontWeight: FontWeight.w400,
@@ -187,18 +194,29 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             fontWeight: FontWeight.w400,
           ),
         ),
-        _buildRecentItem(
-          leadingIcon: SvgPicture.asset("assets/icons/budget.svg"),
-          title: "Add New Budget",
-          description: "08:00am",
-          onPressed: () {},
-        ),
-        SizedBox(height: 5.0.h),
-        _buildRecentItem(
-          leadingIcon: SvgPicture.asset("assets/icons/profile.svg"),
-          title: "Profile Information",
-          description: "1 day ago",
-          onPressed: () {},
+        StreamBuilder(
+          stream: _activities,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const SizedBox();
+            }
+
+            final activities = snapshot.data as List;
+
+            return ListView.separated(
+              itemBuilder: (ctx, idx) => _buildRecentItem(
+                leadingIcon: SvgPicture.asset("assets/icons/budget.svg"),
+                title: activities[idx]['title'],
+                description: DateFormat('hh:mm a')
+                    .format(DateTime.parse(activities[idx]['created_at'])),
+                onPressed: () {},
+              ),
+              separatorBuilder: (ctx, idx) => SizedBox(height: 10.0.h),
+              itemCount: activities.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+            );
+          },
         ),
       ],
     );

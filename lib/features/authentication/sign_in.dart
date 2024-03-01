@@ -141,7 +141,10 @@ class _SignInScreenState extends State<SignInScreen> {
               Row(
                 children: [
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context)
+                          .pushNamed(AppRoutes.initiateResetPassword);
+                    },
                     child: Text(
                       "Forgot Password?",
                       style: TextStyle(

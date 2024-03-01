@@ -18,6 +18,8 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _fistNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -26,6 +28,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   void dispose() {
+    _fistNameController.dispose();
+    _lastNameController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -53,6 +57,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
           await Supabase.instance.client.from('users').insert({
             'user_id': user!.id,
+            'first_name': _fistNameController.text,
+            'last_name': _lastNameController.text,
             'username': _usernameController.text,
             'email': _emailController.text,
           });
@@ -118,6 +124,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 validator: (value) {
                   if (value!.isEmpty) {
                     return "Username is required";
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 15.0.h),
+              InputField(
+                controller: _fistNameController,
+                hint: "john",
+                label: "First name",
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return "First name is required";
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 15.0.h),
+              InputField(
+                controller: _lastNameController,
+                hint: "emeka",
+                label: "Last name",
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return "Last name is required";
                   }
                   return null;
                 },

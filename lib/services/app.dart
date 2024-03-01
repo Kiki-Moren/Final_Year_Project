@@ -5,6 +5,7 @@ import 'package:final_year_project_kiki/utilities/exceptions.dart';
 import 'package:final_year_project_kiki/utilities/network.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final appApiProvider = Provider<AppService>((ref) => AppService());
 
@@ -79,5 +80,16 @@ class AppService {
       onError('Network error, check your network connection');
       return "";
     }
+  }
+
+  Future<void> addActivity({required String title}) async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+
+      await Supabase.instance.client.from('activities').insert({
+        'user_id': user!.id,
+        'title': title,
+      });
+    } catch (_) {}
   }
 }

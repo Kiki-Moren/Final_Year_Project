@@ -1,21 +1,23 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:final_year_project_kiki/services/app.dart';
 import 'package:final_year_project_kiki/widgets/drop_down_field.dart';
 import 'package:final_year_project_kiki/widgets/input_field.dart';
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class EditBudgetScreen extends StatefulWidget {
+class EditBudgetScreen extends ConsumerStatefulWidget {
   const EditBudgetScreen({super.key});
 
   @override
-  State<EditBudgetScreen> createState() => _EditBudgetScreenState();
+  ConsumerState<EditBudgetScreen> createState() => _EditBudgetScreenState();
 }
 
-class _EditBudgetScreenState extends State<EditBudgetScreen> {
+class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
   Map<String, dynamic>? budget;
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -86,6 +88,10 @@ class _EditBudgetScreenState extends State<EditBudgetScreen> {
     setState(() {
       _loadingDelete = false;
     });
+
+    ref
+        .read(appApiProvider)
+        .addActivity(title: "Edited budget ${_nameController.text}");
 
     // show success message and clear form
     ScaffoldMessenger.of(context).showSnackBar(

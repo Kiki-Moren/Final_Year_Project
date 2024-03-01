@@ -1,19 +1,21 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:final_year_project_kiki/services/app.dart';
 import 'package:final_year_project_kiki/widgets/input_field.dart';
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class SavingBudgetScreen extends StatefulWidget {
+class SavingBudgetScreen extends ConsumerStatefulWidget {
   const SavingBudgetScreen({super.key});
 
   @override
-  State<SavingBudgetScreen> createState() => _SavingBudgetScreenState();
+  ConsumerState<SavingBudgetScreen> createState() => _SavingBudgetScreenState();
 }
 
-class _SavingBudgetScreenState extends State<SavingBudgetScreen> {
+class _SavingBudgetScreenState extends ConsumerState<SavingBudgetScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   bool _isLoading = false;
@@ -44,6 +46,9 @@ class _SavingBudgetScreenState extends State<SavingBudgetScreen> {
       setState(() {
         _isLoading = false;
       });
+
+      ref.read(appApiProvider).addActivity(
+          title: "Topped up savings with ${_amountController.text}");
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

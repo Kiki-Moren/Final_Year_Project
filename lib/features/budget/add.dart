@@ -1,20 +1,22 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:final_year_project_kiki/services/app.dart';
 import 'package:final_year_project_kiki/widgets/drop_down_field.dart';
 import 'package:final_year_project_kiki/widgets/input_field.dart';
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class AddBudgetScreen extends StatefulWidget {
+class AddBudgetScreen extends ConsumerStatefulWidget {
   const AddBudgetScreen({super.key});
 
   @override
-  State<AddBudgetScreen> createState() => _AddBudgetScreenState();
+  ConsumerState<AddBudgetScreen> createState() => _AddBudgetScreenState();
 }
 
-class _AddBudgetScreenState extends State<AddBudgetScreen> {
+class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _amountController = TextEditingController();
@@ -47,6 +49,10 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
       setState(() {
         _loading = false;
       });
+
+      ref
+          .read(appApiProvider)
+          .addActivity(title: "Added budget ${_nameController.text}");
 
       // show success message and clear form
       ScaffoldMessenger.of(context).showSnackBar(

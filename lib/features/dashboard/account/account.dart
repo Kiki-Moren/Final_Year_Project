@@ -1,11 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:final_year_project_kiki/routes.dart';
-import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:flutter_switch/flutter_switch.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../widgets/more_items_widgets.dart';
@@ -18,7 +18,10 @@ class AccountTab extends StatefulWidget {
 }
 
 class _AccountTabState extends State<AccountTab> {
-  bool _notificationEnabled = false;
+  final _user = Supabase.instance.client
+      .from('users')
+      .stream(primaryKey: ['id']).eq(
+          'user_id', Supabase.instance.client.auth.currentUser!.id);
 
   @override
   Widget build(BuildContext context) {
@@ -63,19 +66,23 @@ class _AccountTabState extends State<AccountTab> {
                 ),
               ),
             ),
-            Center(
-              child: Text(
-                "Kiki_2024",
-                style: TextStyle(
-                  fontSize: 24.0.sp,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ),
-            SizedBox(height: 20.0.h),
-            PrimaryButton(
-              onPressed: () {},
-              buttonText: "Edit Profile",
+            StreamBuilder(
+              stream: _user,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const SizedBox();
+                }
+                final user = snapshot.data!.first;
+                return Center(
+                  child: Text(
+                    "${user['first_name']} ${user['last_name']}",
+                    style: TextStyle(
+                      fontSize: 24.0.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                );
+              },
             ),
             SizedBox(height: 20.0.h),
             Text(
@@ -90,7 +97,9 @@ class _AccountTabState extends State<AccountTab> {
               leadingIcon: SvgPicture.asset("assets/icons/profile.svg"),
               text: "Profile Information",
               suffix: const Icon(Icons.navigate_next, color: Colors.white),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).pushNamed(AppRoutes.profile);
+              },
             ),
             SizedBox(height: 3.0.h),
             MoreItemsWidget(
@@ -99,32 +108,15 @@ class _AccountTabState extends State<AccountTab> {
               suffix: Row(
                 children: [
                   Text(
-                    "NGN #",
+                    "NGN",
                     style: TextStyle(
                       fontSize: 12.0.sp,
                       color: Colors.white,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const Icon(Icons.navigate_next, color: Colors.white)
+                  // const Icon(Icons.navigate_next, color: Colors.white)
                 ],
-              ),
-              onPressed: () {},
-            ),
-            SizedBox(height: 3.0.h),
-            MoreItemsWidget(
-              leadingIcon: SvgPicture.asset("assets/icons/notification.svg"),
-              text: "Notification",
-              suffix: FlutterSwitch(
-                width: 45,
-                height: 25,
-                toggleSize: 12,
-                value: _notificationEnabled,
-                onToggle: (value) {
-                  setState(() {
-                    _notificationEnabled = value;
-                  });
-                },
               ),
               onPressed: () {},
             ),
@@ -133,7 +125,15 @@ class _AccountTabState extends State<AccountTab> {
               leadingIcon: SvgPicture.asset("assets/icons/delete.svg"),
               text: "Delete Account",
               suffix: const SizedBox(),
-              onPressed: () {},
+              onPressed: () async {
+                await Supabase.instance.client
+                    .from('users')
+                    .delete()
+                    .eq('id', Supabase.instance.client.auth.currentUser!.id);
+                Supabase.instance.client.auth.signOut();
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoutes.signIn, (route) => false);
+              },
             ),
             SizedBox(height: 3.0.h),
             MoreItemsWidget(
