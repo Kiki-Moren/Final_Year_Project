@@ -202,17 +202,21 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             }
 
             final activities = snapshot.data as List;
+            final acts = activities.reversed.toList();
+            final shownActiviest = acts.length > 2
+                ? activities.sublist(0, 2)
+                : activities.sublist(0, activities.length);
 
             return ListView.separated(
               itemBuilder: (ctx, idx) => _buildRecentItem(
                 leadingIcon: SvgPicture.asset("assets/icons/budget.svg"),
-                title: activities[idx]['title'],
+                title: shownActiviest[idx]['title'],
                 description: DateFormat('hh:mm a')
-                    .format(DateTime.parse(activities[idx]['created_at'])),
+                    .format(DateTime.parse(shownActiviest[idx]['created_at'])),
                 onPressed: () {},
               ),
               separatorBuilder: (ctx, idx) => SizedBox(height: 10.0.h),
-              itemCount: activities.length,
+              itemCount: shownActiviest.length,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
             );
@@ -356,8 +360,8 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                 return Text(
                   '₦${saving['amount'].toString()}',
                   style: TextStyle(
-                    fontSize: 24.0.sp,
-                    fontWeight: FontWeight.w400,
+                    fontSize: 34.0.sp,
+                    fontWeight: FontWeight.w800,
                     color: Colors.white,
                   ),
                 );

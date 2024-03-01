@@ -26,6 +26,8 @@ class _BudgetTabState extends State<BudgetTab> {
     required double amount,
     required double total,
   }) {
+    if (amount > total) return 1.0;
+
     return amount / total * 10;
   }
 
@@ -33,6 +35,8 @@ class _BudgetTabState extends State<BudgetTab> {
     required double amount,
     required double total,
   }) {
+    if (amount > total) return 0;
+
     return total - amount;
   }
 
@@ -316,7 +320,7 @@ class _BudgetTabState extends State<BudgetTab> {
                   '₦${saving['amount'].toString()}',
                   style: TextStyle(
                     fontSize: 24.0.sp,
-                    fontWeight: FontWeight.w400,
+                    fontWeight: FontWeight.w800,
                     color: Colors.white,
                   ),
                 );

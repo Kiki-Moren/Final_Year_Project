@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'flavors.dart';
@@ -30,7 +31,7 @@ class _AppState extends ConsumerState<App> {
         return MaterialApp(
           title: F.title,
           theme: ThemeData(
-            fontFamily: "Kalam",
+            fontFamily: GoogleFonts.roboto().fontFamily,
             scaffoldBackgroundColor: const Color(0xffD8EBE9),
             primarySwatch:
                 AppMethods.createMaterialColor(const Color(0xFF165A4A)),
