@@ -1,3 +1,4 @@
+import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:final_year_project_kiki/routes.dart';
 import 'package:final_year_project_kiki/services/app.dart';
 import 'package:final_year_project_kiki/state/app_state.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:logger/logger.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CurrencyConverterTab extends ConsumerStatefulWidget {
   const CurrencyConverterTab({super.key});
@@ -27,6 +29,11 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
   bool _isLoading = false;
   double? _convertedAmount;
 
+  final _user = Supabase.instance.client
+      .from('users')
+      .stream(primaryKey: ['id']).eq(
+          'user_id', Supabase.instance.client.auth.currentUser!.id);
+
   void _convertCurrency() async {
     if (_toCurrency == null ||
         _fromCurrency == null ||
@@ -41,7 +48,7 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
     double amount = await ref.read(appApiProvider).getConversionValue(
           fromCurrency: _fromCurrency!,
           toCurrency: _toCurrency!,
-          amount: double.parse(_amountController.text),
+          amount: double.parse(_amountController.text.replaceAll(',', '')),
           ref: ref,
           onError: (_) {},
         );
@@ -68,15 +75,24 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
         padding: const EdgeInsets.all(20.0),
         child: ListView(
           children: [
-            Center(
-              child: Text(
-                "Hello Kiki,",
-                style: TextStyle(
-                  fontSize: 24.0.sp,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ),
+            StreamBuilder(
+                stream: _user,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const SizedBox();
+                  }
+                  final user = snapshot.data!.first;
+
+                  return Center(
+                    child: Text(
+                      "Hello ${user['first_name']},",
+                      style: TextStyle(
+                        fontSize: 24.0.sp,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  );
+                }),
             SizedBox(height: 20.0.h),
             _buildForm(),
             SizedBox(height: 20.0.h),
@@ -124,7 +140,16 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
         InputField(
           controller: _amountController,
           hint: "Enter Amount to Convert",
-          textInputType: TextInputType.number,
+          textInputType: const TextInputType.numberWithOptions(
+            decimal: true,
+            signed: true,
+          ),
+          formatters: [
+            CurrencyTextInputFormatter(
+              decimalDigits: 2,
+              symbol: '',
+            ),
+          ],
           validator: (String? value) {
             if (value == null || value.isEmpty) {
               return "Amount is required";

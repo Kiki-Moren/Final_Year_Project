@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:final_year_project_kiki/services/app.dart';
+import 'package:final_year_project_kiki/state/app_state.dart';
 import 'package:final_year_project_kiki/widgets/drop_down_field.dart';
 import 'package:final_year_project_kiki/widgets/input_field.dart';
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
@@ -43,7 +45,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
         'user_id': user!.id,
         'name': _nameController.text,
         'currency': _currency,
-        'amount': _amountController.text,
+        'amount': _amountController.text.replaceAll(',', ''),
       });
 
       setState(() {
@@ -104,7 +106,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
               ),
               SizedBox(height: 20.0.h),
               DropDownField(
-                data: const ["USD", "NGN", "GBP"],
+                data: ref.watch(currencies).map((e) => e.currency!).toList(),
                 hint: "Select Currency",
                 label: "Currency",
                 selected: _currency,
@@ -124,7 +126,16 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
               InputField(
                 controller: _amountController,
                 hint: "Enter Amount",
-                textInputType: TextInputType.number,
+                textInputType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                  signed: true,
+                ),
+                formatters: [
+                  CurrencyTextInputFormatter(
+                    decimalDigits: 2,
+                    symbol: '',
+                  ),
+                ],
                 validator: (String? name) {
                   if (name!.isEmpty) {
                     return "Amount is required";

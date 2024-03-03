@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -24,25 +25,16 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
   String? _selectedCurrency;
   bool _isLoading = false;
   double? _rate;
-  final _budgets =
-      Supabase.instance.client.from('budgets').stream(primaryKey: ['id']);
+  final _budgets = Supabase.instance.client
+      .from('budgets')
+      .stream(primaryKey: ['id'])
+      .eq('user_id', Supabase.instance.client.auth.currentUser!.id)
+      .order('amount', ascending: true);
 
   final _savings = Supabase.instance.client
       .from('savings')
       .stream(primaryKey: ['id']).eq(
           'user_id', Supabase.instance.client.auth.currentUser!.id);
-
-  double _calculatePercentage({required double amount, required double total}) {
-    if (amount > total) return 1;
-
-    return amount / total * 10;
-  }
-
-  double _calculateAmountLeft({required double amount, required double total}) {
-    if (amount > total) return 0;
-
-    return total - amount;
-  }
 
   @override
   void dispose() {
@@ -78,6 +70,39 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
       _isLoading = false;
       _rate = rate * double.parse(_percentageController.text);
     });
+  }
+
+  double _calculatePercentage({
+    required double amount,
+    required double total,
+  }) {
+    if (amount > total) return 1.0;
+
+    return amount / total;
+  }
+
+  List<double> _spreadSavings({
+    required List<double> budgets,
+    required double totalSavings,
+    required int index,
+  }) {
+    double remainingAmount = totalSavings;
+    List<double> remainingBudgets = [];
+
+    // Iterate through each budget
+    for (double budget in budgets) {
+      // Check if there's enough savings to cover the budget
+      if (remainingAmount >= budget) {
+        print("Budget $budget: $budget Naira allocated");
+        remainingBudgets.add(budget);
+        remainingAmount -= budget;
+      } else {
+        remainingBudgets.add(remainingAmount);
+        remainingAmount = 0;
+      }
+    }
+
+    return remainingBudgets;
   }
 
   Future<double> _calculateCurrentAmountInSavedCurrency({
@@ -168,16 +193,53 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
                     return const SizedBox();
                   }
                   final budgets = snapshot.data!;
-                  return ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (ctx, idx) => _buildBudgetItem(
-                      budget: budgets[idx],
-                      index: idx,
-                    ),
-                    separatorBuilder: (ctx, idx) => SizedBox(height: 10.0.h),
-                    itemCount: budgets.length,
-                  );
+                  return StreamBuilder(
+                      stream: _savings,
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const SizedBox();
+                        }
+                        final savings = snapshot.data!.first;
+
+                        return ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (ctx, idx) {
+                            return FutureBuilder(
+                                future: _calculateCurrentAmountInSavedCurrency(
+                                  amount: double.parse(
+                                      savings['amount'].toString()),
+                                  currency: budgets[idx]['currency'],
+                                ),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData) {
+                                    return const SizedBox();
+                                  }
+
+                                  final amount = snapshot.data as double;
+
+                                  final remainingBudgets = _spreadSavings(
+                                    budgets: budgets
+                                        .map((e) => double.parse(
+                                            e['amount'].toString()))
+                                        .toList(),
+                                    totalSavings: amount,
+                                    index: idx,
+                                  );
+
+                                  return _buildBudgetItem(
+                                    budget: budgets[idx],
+                                    index: idx,
+                                    spent: remainingBudgets[idx],
+                                    savings: savings,
+                                  );
+                                });
+                          },
+                          separatorBuilder: (ctx, idx) =>
+                              SizedBox(height: 10.0.h),
+                          itemCount: budgets.length,
+                        );
+                      });
                 },
               ),
             ),
@@ -190,6 +252,8 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
   Widget _buildBudgetItem({
     required Map<String, dynamic> budget,
     required int index,
+    required double spent,
+    required Map<String, dynamic> savings,
   }) {
     return GestureDetector(
       onTap: () async {
@@ -252,95 +316,35 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
                     ],
                   ),
                   SizedBox(height: 10.0.h),
-                  StreamBuilder(
-                      stream: _savings,
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const SizedBox();
-                        }
-                        final saving = snapshot.data!.first;
-                        final balance = _calculateCurrentAmountInSavedCurrency(
-                          amount: double.parse(saving['amount'].toString()),
-                          currency: budget['currency'],
-                        );
-                        return FutureBuilder(
-                            future: balance,
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return const SizedBox();
-                              }
-
-                              final balanc = snapshot.data as double;
-
-                              return Text(
-                                "${balanc.toStringAsFixed(2)} / ${budget['amount']} ${budget['currency']}",
-                                style: TextStyle(
-                                  color: index % 2 != 0
-                                      ? Colors.black
-                                      : Colors.white,
-                                  fontSize: 14.0.sp,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              );
-                            });
-                      }),
+                  Text(
+                    "${NumberFormat.currency(locale: "en_US", symbol: budget['currency']).format(spent)} / ${NumberFormat.currency(locale: "en_US", symbol: budget['currency']).format(budget['amount'])}",
+                    style: TextStyle(
+                      color: index % 2 != 0 ? Colors.black : Colors.white,
+                      fontSize: 14.0.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
                   SizedBox(height: 10.0.h),
-                  StreamBuilder(
-                      stream: _savings,
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const SizedBox();
-                        }
-
-                        final saving = snapshot.data!.first;
-                        final percentage = _calculatePercentage(
-                          amount: double.parse(saving['amount'].toString()),
-                          total: double.parse(budget['amount'].toString()),
-                        );
-
-                        return LinearPercentIndicator(
-                          width: 180.0.w,
-                          lineHeight: 8.0.w,
-                          percent: percentage,
-                          barRadius: Radius.circular(10.0.r),
-                          backgroundColor: Colors.grey,
-                          progressColor: Colors.blue,
-                        );
-                      }),
+                  LinearPercentIndicator(
+                    width: 180.0.w,
+                    lineHeight: 8.0.w,
+                    percent: _calculatePercentage(
+                      amount: spent,
+                      total: double.parse(budget['amount'].toString()),
+                    ),
+                    barRadius: Radius.circular(10.0.r),
+                    backgroundColor: Colors.grey,
+                    progressColor: Colors.blue,
+                  ),
                   SizedBox(height: 10.0.h),
-                  StreamBuilder(
-                      stream: _savings,
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const SizedBox();
-                        }
-
-                        final saving = snapshot.data!.first;
-                        final amountLeft = _calculateAmountLeft(
-                          amount: double.parse(saving['amount'].toString()),
-                          total: double.parse(budget['amount'].toString()),
-                        );
-
-                        final balance = _calculateCurrentAmountInSavedCurrency(
-                          amount: amountLeft,
-                          currency: budget['currency'],
-                        );
-
-                        return FutureBuilder(
-                            future: balance,
-                            builder: (context, snapshot) {
-                              return Text(
-                                "You need ${snapshot.data} ${budget['currency']} more for tuition",
-                                style: TextStyle(
-                                  color: index % 2 != 0
-                                      ? Colors.black
-                                      : Colors.white,
-                                  fontSize: 14.0.sp,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              );
-                            });
-                      }),
+                  Text(
+                    "You need ${NumberFormat.currency(locale: "en_US", symbol: budget['currency']).format(double.parse(budget['amount'].toString()) - spent)} more to reach your goal",
+                    style: TextStyle(
+                      color: index % 2 != 0 ? Colors.black : Colors.white,
+                      fontSize: 14.0.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
                 ],
               ),
             ),

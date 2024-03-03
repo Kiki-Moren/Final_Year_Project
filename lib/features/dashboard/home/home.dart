@@ -92,7 +92,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Did You Know?",
+                "Quote of the Day",
                 style: TextStyle(
                   fontSize: 24.0.sp,
                   fontWeight: FontWeight.w400,
@@ -358,7 +358,8 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                 }
                 final saving = snapshot.data!.first;
                 return Text(
-                  '₦${saving['amount'].toString()}',
+                  NumberFormat.currency(locale: "en_US", symbol: "₦")
+                      .format(saving['amount']),
                   style: TextStyle(
                     fontSize: 34.0.sp,
                     fontWeight: FontWeight.w800,
@@ -372,7 +373,8 @@ class _HomeTabState extends ConsumerState<HomeTab> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed(AppRoutes.topUpSaving),
                   child: const Text(
                     'Edit',
                     style: TextStyle(

@@ -67,6 +67,7 @@ class _InputFieldState extends State<InputField> {
             maxLength: widget.maxLength,
             readOnly: widget.notEditable,
             inputFormatters: widget.formatters,
+            textInputAction: TextInputAction.done,
             onTap: widget.onTap,
             decoration: InputDecoration(
               counterText: "",
