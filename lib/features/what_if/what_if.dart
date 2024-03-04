@@ -73,6 +73,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
 
     setState(() {
       _isLoading = false;
+      _remainingAmount = 0;
       _rate = _selectedChoice == "Up"
           ? rate / double.parse(_percentageController.text)
           : rate * double.parse(_percentageController.text);
@@ -129,12 +130,20 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
           onError: (_) {},
         );
 
-    if (_selectedCurrency == currency) {
-      return amount *
-          rate /
-          double.parse(_percentageController.text.isEmpty
-              ? "1"
-              : _percentageController.text);
+    if (_selectedCurrency != currency) {
+      if (_selectedChoice == "Down") {
+        return amount *
+            rate /
+            double.parse(_percentageController.text.isEmpty
+                ? "1"
+                : _percentageController.text);
+      } else {
+        return amount *
+            rate *
+            double.parse(_percentageController.text.isEmpty
+                ? "1"
+                : _percentageController.text);
+      }
     } else {
       return amount * rate;
     }

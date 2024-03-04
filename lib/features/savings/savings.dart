@@ -43,7 +43,8 @@ class _SavingBudgetScreenState extends ConsumerState<SavingBudgetScreen> {
 
       await Supabase.instance.client.from('savings').upsert({
         'id': savings['id'],
-        'amount': savings['amount'] + double.parse(_amountController.text),
+        'amount': savings['amount'] +
+            double.parse(_amountController.text.replaceAll(',', '')),
       });
 
       setState(() {
@@ -77,7 +78,8 @@ class _SavingBudgetScreenState extends ConsumerState<SavingBudgetScreen> {
           .eq('user_id', Supabase.instance.client.auth.currentUser!.id)
           .single();
 
-      if (savings['amount'] < double.parse(_amountController.text)) {
+      if (savings['amount'] <
+          double.parse(_amountController.text.replaceAll(',', ''))) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Insufficient funds"),
@@ -92,7 +94,8 @@ class _SavingBudgetScreenState extends ConsumerState<SavingBudgetScreen> {
 
       await Supabase.instance.client.from('savings').upsert({
         'id': savings['id'],
-        'amount': savings['amount'] - double.parse(_amountController.text),
+        'amount': savings['amount'] -
+            double.parse(_amountController.text.replaceAll(',', '')),
       });
 
       setState(() {
