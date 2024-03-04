@@ -93,7 +93,6 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
     for (double budget in budgets) {
       // Check if there's enough savings to cover the budget
       if (remainingAmount >= budget) {
-        print("Budget $budget: $budget Naira allocated");
         remainingBudgets.add(budget);
         remainingAmount -= budget;
       } else {
@@ -116,7 +115,11 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
           onError: (_) {},
         );
 
-    return amount * rate;
+    return amount *
+        rate /
+        double.parse(_percentageController.text.isEmpty
+            ? "1"
+            : _percentageController.text);
   }
 
   @override
@@ -171,19 +174,21 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
                       size: 30.0.w,
                     ),
                   )
-                : Row(
-                    children: [
-                      Text(
-                        "Rate will be: 1 ${_selectedCurrency ?? ""} = $_rate NGN",
-                        style: TextStyle(
-                          fontSize: 16.0.sp,
-                          fontWeight: FontWeight.w400,
-                        ),
+                : _rate == null
+                    ? const SizedBox()
+                    : Row(
+                        children: [
+                          Text(
+                            "Rate will be: 1 ${_selectedCurrency ?? ""} = ${NumberFormat.currency(locale: "en_US", symbol: "NGN").format(_rate)}",
+                            style: TextStyle(
+                              fontSize: 16.0.sp,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          SizedBox(width: 10.0.w),
+                          SvgPicture.asset("assets/icons/sad.svg"),
+                        ],
                       ),
-                      SizedBox(width: 10.0.w),
-                      SvgPicture.asset("assets/icons/sad.svg"),
-                    ],
-                  ),
             SizedBox(height: 20.0.h),
             Expanded(
               child: StreamBuilder(

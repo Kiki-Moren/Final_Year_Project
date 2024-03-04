@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:logger/logger.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -50,7 +49,6 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     for (double budget in budgets) {
       // Check if there's enough savings to cover the budget
       if (remainingAmount >= budget) {
-        print("Budget $budget: $budget Naira allocated");
         remainingBudgets.add(budget);
         remainingAmount -= budget;
       } else {
