@@ -207,8 +207,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             }
 
             final activities = snapshot.data as List;
-            final acts = activities.reversed.toList();
-            final shownActiviest = acts.length > 2
+            final shownActiviest = activities.length > 2
                 ? activities.sublist(0, 2)
                 : activities.sublist(0, activities.length);
 
