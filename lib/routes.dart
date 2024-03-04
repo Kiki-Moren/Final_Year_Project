@@ -13,6 +13,7 @@ import 'features/authentication/sign_up.dart';
 import 'features/dashboard/dashboard.dart';
 
 class AppRoutes {
+  // Define routes
   static Map<String, WidgetBuilder> routes = {
     authentication: (context) => const AuthenticationScreen(),
     signIn: (context) => const SignInScreen(),
@@ -27,6 +28,7 @@ class AppRoutes {
     whatIf: (context) => const WhatIfScreen(),
   };
 
+  // Define paths
   static String authentication = '/';
   static String signIn = '/sign-in';
   static String signUp = '/sign-up';

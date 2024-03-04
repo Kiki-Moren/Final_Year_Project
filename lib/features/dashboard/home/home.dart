@@ -37,6 +37,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     return Scaffold(body: _buildBody());
   }
 
+  // Build the body of the home tab
   Widget _buildBody() {
     return SafeArea(
       child: Container(
@@ -75,6 +76,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     );
   }
 
+  // Build Quote UI
   Widget _buildQuoteSection() {
     return FutureBuilder(
         future: ref.read(appApiProvider).getBusinessQuote(
@@ -115,6 +117,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
         });
   }
 
+  // Build the exchange rate UI
   Widget _buildExchangeRate() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,6 +134,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     );
   }
 
+  // Build the exchange rate chart
   Widget _buildChart() {
     var exchangeRates = Data.exchangeRates
         .firstWhere((element) => element["currency"] == "NGN")["rates"]
@@ -183,6 +187,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     );
   }
 
+  // Build the recent activities UI
   Widget _buildRecentActivities() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,6 +231,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     );
   }
 
+  // Build the recent item
   Widget _buildRecentItem({
     required String title,
     required String description,
@@ -278,6 +284,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     );
   }
 
+  // Build the create new budget button
   Widget _buildCreateNewBudgetButton() {
     return GestureDetector(
       onTap: () {
@@ -326,6 +333,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
     );
   }
 
+  // Build the total savings container
   Widget _buildTotalSavingsContainer() {
     return GestureDetector(
       onTap: () => Navigator.of(context).pushNamed(AppRoutes.topUpSaving),

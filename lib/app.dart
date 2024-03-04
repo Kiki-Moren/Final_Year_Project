@@ -17,11 +17,6 @@ class App extends ConsumerStatefulWidget {
 
 class _AppState extends ConsumerState<App> {
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(375, 812),

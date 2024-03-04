@@ -18,6 +18,7 @@ class AccountTab extends StatefulWidget {
 }
 
 class _AccountTabState extends State<AccountTab> {
+  // Stream of the user
   final _user = Supabase.instance.client
       .from('users')
       .stream(primaryKey: ['id']).eq(
@@ -28,6 +29,7 @@ class _AccountTabState extends State<AccountTab> {
     return Scaffold(body: _buildBody());
   }
 
+  // Build the body of the account tab
   Widget _buildBody() {
     return SafeArea(
       child: Container(

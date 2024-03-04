@@ -28,6 +28,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   @override
   void initState() {
     super.initState();
+    // set the email of the user on the screen after loading the screen
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _emailController.text =
           ModalRoute.of(context)!.settings.arguments as String;
@@ -36,6 +37,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
   @override
   void dispose() {
+    // dispose controllers
     _emailController.dispose();
     _tokenController.dispose();
     _passwordController.dispose();
@@ -44,11 +46,14 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   }
 
   void _resetPassword() async {
+    // Validate the form
     if (_formKey.currentState!.validate()) {
+      // Show the loading indicator
       setState(() {
         _loading = true;
       });
 
+      // Send the password reset email
       try {
         final recovery = await Supabase.instance.client.auth.verifyOTP(
           email: _emailController.text,
@@ -58,6 +63,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
         Logger().i(recovery);
 
+        // Update the user's password
         await Supabase.instance.client.auth.updateUser(
           UserAttributes(password: _passwordController.text),
         );
@@ -92,6 +98,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     );
   }
 
+  // Build the body of the reset password screen
   Widget _buildBody() {
     return SafeArea(
       child: Padding(

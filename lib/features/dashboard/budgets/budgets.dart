@@ -28,6 +28,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
       .stream(primaryKey: ['id']).eq(
           'user_id', Supabase.instance.client.auth.currentUser!.id);
 
+  // Calculate the percentage of the amount spent
   double _calculatePercentage({
     required double amount,
     required double total,
@@ -37,6 +38,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     return amount / total;
   }
 
+  // Spread the savings across the budgets
   List<double> _spreadSavings({
     required List<double> budgets,
     required double totalSavings,
@@ -60,6 +62,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     return remainingBudgets;
   }
 
+  // Calculate the current amount in the saved currency
   Future<double> _calculateCurrentAmountInSavedCurrency({
     required double amount,
     required String currency,
@@ -74,6 +77,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     return amount * rate;
   }
 
+  // Convert the amount to NGN
   Future<double> _convertToNGN({
     required double amount,
     required String currency,
@@ -88,6 +92,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     return amount * rate;
   }
 
+  // Calculate the remaining amount
   Future<String> _calculateRemainingAmount({
     required double amount,
     required double total,
@@ -123,6 +128,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     );
   }
 
+  //  Build the body of the budget screen
   Widget _buildBody() {
     return SafeArea(
       child: Container(
@@ -236,6 +242,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     );
   }
 
+  // Build the bottom section of the budget screen
   Widget _buildBottomSection() {
     return Container(
       padding: const EdgeInsets.all(20.0),
@@ -266,6 +273,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     );
   }
 
+  // Build the budget item
   Widget _buildBudgetItem({
     required Map<String, dynamic> budget,
     required int index,
@@ -402,6 +410,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     );
   }
 
+  // Build the total savings container
   Widget _buildTotalSavingsContainer() {
     return GestureDetector(
       onTap: () => Navigator.of(context).pushNamed(AppRoutes.topUpSaving),

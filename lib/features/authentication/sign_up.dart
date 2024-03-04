@@ -38,10 +38,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _signUp() async {
+    // Validate the form
     if (_formKey.currentState!.validate()) {
       setState(() {
         _loading = true;
       });
+
+      // Sign up the user
       try {
         final response = await Supabase.instance.client.auth.signUp(
           email: _emailController.text,
@@ -87,6 +90,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Scaffold(body: _buildBody());
   }
 
+  // Build the body of the sign up screen
   Widget _buildBody() {
     return SafeArea(
       child: Padding(

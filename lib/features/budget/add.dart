@@ -12,7 +12,6 @@ import 'package:final_year_project_kiki/widgets/upload_document.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AddBudgetScreen extends ConsumerStatefulWidget {
@@ -38,6 +37,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
     super.dispose();
   }
 
+  // Save budget to database
   void _saveBudget() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -83,6 +83,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
     }
   }
 
+  // Upload image to Supabase Storage
   Future<String?> uploadImage() async {
     // // Upload image to Supabase Storage
     // // Replace 'imagePath' with the actual path of the image file
@@ -122,6 +123,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
     );
   }
 
+  // Build the body of the add budget screen
   Widget _buildBody() {
     return SafeArea(
       child: Padding(

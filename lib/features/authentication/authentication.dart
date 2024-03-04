@@ -17,6 +17,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     return Scaffold(body: _buildBody());
   }
 
+  // Build the body of the authentication screen
   Widget _buildBody() {
     return SafeArea(
       child: Container(

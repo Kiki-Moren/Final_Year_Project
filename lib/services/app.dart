@@ -12,6 +12,7 @@ final appApiProvider = Provider<AppService>((ref) => AppService());
 class AppService {
   Network network = NetworkImplementation();
 
+  // Get currencies
   Future<void> getCurrencies({
     required WidgetRef ref,
     required void Function(String message) onError,
@@ -31,6 +32,7 @@ class AppService {
     }
   }
 
+  // Get conversion value
   Future<double> getConversionValue({
     required String fromCurrency,
     required String toCurrency,
@@ -58,6 +60,7 @@ class AppService {
     }
   }
 
+  // Get exchange rate
   Future<double> getExchangeRate({
     required String fromCurrency,
     required String toCurrency,
@@ -84,6 +87,7 @@ class AppService {
     }
   }
 
+  // Get business quote
   Future<String> getBusinessQuote({
     required WidgetRef ref,
     required void Function(String message) onError,
@@ -108,6 +112,7 @@ class AppService {
     }
   }
 
+  // Add activity
   Future<void> addActivity({required String title}) async {
     try {
       final user = Supabase.instance.client.auth.currentUser;

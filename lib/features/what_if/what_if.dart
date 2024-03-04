@@ -46,6 +46,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
     super.dispose();
   }
 
+  // Get exchange rate
   void _getExchangeRate() async {
     if (_percentageController.text.isEmpty || _selectedCurrency == null) {
       return;
@@ -78,6 +79,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
     });
   }
 
+  // Calculate percentage
   double _calculatePercentage({
     required double amount,
     required double total,
@@ -87,6 +89,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
     return amount / total;
   }
 
+  // Spread savings
   List<double> _spreadSavings({
     required List<double> budgets,
     required double totalSavings,
@@ -114,6 +117,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
     return remainingBudgets;
   }
 
+  // Calculate current amount in saved currency
   Future<double> _calculateCurrentAmountInSavedCurrency({
     required double amount,
     required String currency,
@@ -136,6 +140,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
     }
   }
 
+  // Convert to NGN
   Future<double> _convertToNGN({
     required double amount,
     required String currency,
@@ -150,6 +155,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
     return amount * rate;
   }
 
+  // Calculate remaining amount
   Future<String> _calculateRemainingAmount({
     required double amount,
     required double total,
@@ -169,6 +175,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
     return "You need ${NumberFormat.currency(locale: "en_US", symbol: "NGN").format(remaining)} more to reach your goal";
   }
 
+  // Calculate total amount left
   Future<String> _calculateTotalAmountLeft({
     required double total,
     required double? remaining,
@@ -193,6 +200,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
     );
   }
 
+  // Build the body of the screen
   Widget _buildBody() {
     return SafeArea(
       child: Padding(
@@ -355,6 +363,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
     );
   }
 
+  // Build the budget item
   Widget _buildBudgetItem({
     required Map<String, dynamic> budget,
     required int index,

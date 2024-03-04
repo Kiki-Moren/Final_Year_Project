@@ -5,6 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 
 FutureOr<void> main() async {
+  // Initialize Flutter
+  WidgetsFlutterBinding.ensureInitialized();
+  // Initialize Supabase
   await Supabase.initialize(
     url: 'https://cepkjgizjxepkoxdlqfw.supabase.co',
     anonKey:

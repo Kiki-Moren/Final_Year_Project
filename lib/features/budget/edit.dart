@@ -41,6 +41,7 @@ class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
     super.dispose();
   }
 
+  // Load initial values
   void _loadInitialValues() async {
     budget = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     _nameController.text = budget!['name'].toString();
@@ -49,6 +50,7 @@ class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
     setState(() {});
   }
 
+  // Update budget to database
   void _update() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -76,6 +78,7 @@ class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
     }
   }
 
+  // Delete budget from database
   void _delete() async {
     setState(() {
       _loadingDelete = true;
@@ -122,6 +125,7 @@ class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
     );
   }
 
+  // Build the body of the edit budget screen
   Widget _buildBody() {
     return SafeArea(
       child: Padding(

@@ -45,15 +45,16 @@ abstract class Network {
 }
 
 class NetworkImplementation extends Network {
+  // Create headers
   Map<String, String> createHeaders(Map<String, dynamic> incomingHeaders) {
     return {
       'Content-type': 'application/json',
       'Accept': 'application/json',
-      // if (BearerToken.token != null) "authorization": BearerToken.token!,
       ...incomingHeaders,
     };
   }
 
+  // Handle response
   dynamic handleResponse(http.Response response) {
     if (!isSuccessResponse(response.statusCode)) {
       var decodedResponse = json.decode(response.body);
@@ -68,6 +69,7 @@ class NetworkImplementation extends Network {
     }
   }
 
+  // Handle form response
   dynamic handleFormResponse(http.StreamedResponse response) async {
     if (!isSuccessResponse(response.statusCode)) {
       var data = await response.stream.bytesToString();
@@ -82,6 +84,7 @@ class NetworkImplementation extends Network {
     }
   }
 
+  // Check media type
   String? checkMediaType(File file) {
     String? mediaType = lookupMimeType(file.path);
     return mediaType;
@@ -89,6 +92,7 @@ class NetworkImplementation extends Network {
 
   bool isSuccessResponse(int number) => number >= 200 && number <= 299;
 
+  // Network methods
   @override
   Future delete(
     String route, {

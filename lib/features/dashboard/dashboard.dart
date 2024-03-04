@@ -29,6 +29,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     });
   }
 
+  // Create wallet
   void _createWallet() async {
     final savings = await Supabase.instance.client
         .from('savings')
@@ -51,6 +52,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
+  // Build the body of the screen
   Widget _buildBody() {
     return _selectedIndex == 0
         ? const HomeTab()
@@ -61,6 +63,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 : const AccountTab();
   }
 
+  // Build the navigation bar
   Widget _buildNavBar() {
     return FlashyTabBar(
       selectedIndex: _selectedIndex,

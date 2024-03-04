@@ -37,6 +37,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     super.dispose();
   }
 
+  // Load initial values
   void _loadInitialValues() async {
     final user = await Supabase.instance.client
         .from('users')
@@ -50,6 +51,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _emailController.text = user['email'].toString();
   }
 
+  // Update profile
   void _update() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -78,6 +80,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
+  // Build the body of the screen
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,6 +98,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  // Build the body of the screen
   Widget _buildBody() {
     return SafeArea(
       child: Padding(

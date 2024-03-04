@@ -28,6 +28,7 @@ class _SavingBudgetScreenState extends ConsumerState<SavingBudgetScreen> {
     super.dispose();
   }
 
+  // Top up savings
   void _topUpSavings() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -63,6 +64,7 @@ class _SavingBudgetScreenState extends ConsumerState<SavingBudgetScreen> {
     }
   }
 
+  // Reduce savings
   void _reduceSavings() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -129,6 +131,7 @@ class _SavingBudgetScreenState extends ConsumerState<SavingBudgetScreen> {
     );
   }
 
+  // Build the body of the screen
   Widget _buildBody() {
     return SafeArea(
       child: Padding(

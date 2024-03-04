@@ -34,6 +34,7 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
       .stream(primaryKey: ['id']).eq(
           'user_id', Supabase.instance.client.auth.currentUser!.id);
 
+  // Convert currency
   void _convertCurrency() async {
     if (_toCurrency == null ||
         _fromCurrency == null ||
@@ -69,6 +70,7 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
     return Scaffold(body: _buildBody());
   }
 
+  // Build the body of the screen
   Widget _buildBody() {
     return SafeArea(
       child: Container(
@@ -109,6 +111,7 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
     );
   }
 
+  // Build the form for the currency converter
   Widget _buildForm() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,6 +183,7 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
     );
   }
 
+  // Build the exchange rate chart
   Widget _buildExchangeRate() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,6 +200,7 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
     );
   }
 
+  // Build the chart
   Widget _buildChart() {
     var exchangeRates = Data.exchangeRates
         .firstWhere((element) => element["currency"] == _toCurrency)["rates"]

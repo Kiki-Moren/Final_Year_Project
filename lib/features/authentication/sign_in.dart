@@ -30,11 +30,13 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   void _logIn() async {
+    // Validate the form
     if (_formKey.currentState!.validate()) {
       setState(() {
         _loading = true;
       });
 
+      // Sign in the user
       try {
         final response = await Supabase.instance.client.auth.signInWithPassword(
           email: _emailController.text,
@@ -70,6 +72,7 @@ class _SignInScreenState extends State<SignInScreen> {
     return Scaffold(body: _buildBody());
   }
 
+  // Build the body of the authentication screen
   Widget _buildBody() {
     return SafeArea(
       child: Padding(

@@ -23,30 +23,27 @@ class _InitiatePasswordResetScreenState
   bool _loading = false;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void dispose() {
     _emailController.dispose();
     super.dispose();
   }
 
   void _initiate() async {
+    // Validate the form
     if (_formKey.currentState!.validate()) {
+      // Show the loading indicator
       setState(() {
         _loading = true;
       });
-
+      // Send the password reset email
       await Supabase.instance.client.auth.resetPasswordForEmail(
         _emailController.text,
       );
-
+      // Hide the loading indicator
       setState(() {
         _loading = false;
       });
-
+      // Navigate to the reset password screen
       Navigator.of(context).pushNamed(
         AppRoutes.resetPassword,
         arguments: _emailController.text,
@@ -54,6 +51,7 @@ class _InitiatePasswordResetScreenState
     }
   }
 
+  // Build the body of the reset password screen
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,6 +69,7 @@ class _InitiatePasswordResetScreenState
     );
   }
 
+  // Build the body of the reset password screen
   Widget _buildBody() {
     return SafeArea(
       child: Padding(
