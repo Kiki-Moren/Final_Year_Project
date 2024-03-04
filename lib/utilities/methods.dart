@@ -1,4 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart' as path_provider;
 
 class AppMethods {
   static MaterialColor createMaterialColor(Color color) {
@@ -28,5 +33,19 @@ class AppMethods {
     }
 
     return MaterialColor(color.value, swatch);
+  }
+
+  static Future<File> compressFilePNG(File file) async {
+    var uniqueId = const Uuid().v4();
+    final dir = await path_provider.getTemporaryDirectory();
+    final targetPath = "${dir.absolute.path}/$uniqueId.png";
+    var result = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path,
+      targetPath,
+      quality: 10,
+      format: CompressFormat.png,
+    );
+
+    return File(result!.path);
   }
 }

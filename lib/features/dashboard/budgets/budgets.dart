@@ -74,6 +74,36 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     return amount * rate;
   }
 
+  Future<double> _convertToNGN({
+    required double amount,
+    required String currency,
+  }) async {
+    final rate = await ref.read(appApiProvider).getExchangeRate(
+          fromCurrency: currency,
+          toCurrency: "NGN",
+          ref: ref,
+          onError: (_) {},
+        );
+
+    return amount * rate;
+  }
+
+  Future<String> _calculateRemainingAmount({
+    required double amount,
+    required double total,
+    required String currency,
+  }) async {
+    // NumberFormat.currency(locale: "en_US", symbol: budget['currency']).format(double.parse(budget['amount'].toString()) - spent);
+
+    double remaining = await _convertToNGN(
+      amount: total - amount,
+      currency: currency,
+    );
+    if (total - amount <= 0) return "Well done you have enough for your budget";
+
+    return "You need ${NumberFormat.currency(locale: "en_US", symbol: "NGN").format(remaining)} more to reach your goal";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -242,6 +272,24 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     required double spent,
     required Map<String, dynamic> savings,
   }) {
+    final String publicUrl = Supabase.instance.client.storage
+        .from('public-bucket')
+        .getPublicUrl(budget['image']);
+
+    // Split the URL based on '/'
+    List<String> parts = publicUrl.split('/');
+
+    // Iterate through the parts and remove 'public-bucket'
+    List<String> updatedParts = [];
+    for (String part in parts) {
+      if (part != "public-bucket") {
+        updatedParts.add(part);
+      }
+    }
+
+    // Reconstruct the URL
+    String updatedUrl = updatedParts.join('/');
+
     return GestureDetector(
       onTap: () async {
         await Navigator.of(context).pushNamed(
@@ -262,7 +310,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
         child: Row(
           children: [
             CachedNetworkImage(
-              imageUrl: 'https://picsum.photos/200',
+              imageUrl: updatedUrl,
               imageBuilder: (context, imageProvider) => Container(
                 width: 80.w,
                 height: 100.h,
@@ -324,14 +372,27 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
                     progressColor: Colors.blue,
                   ),
                   SizedBox(height: 10.0.h),
-                  Text(
-                    "You need ${NumberFormat.currency(locale: "en_US", symbol: budget['currency']).format(double.parse(budget['amount'].toString()) - spent)} more to reach your goal",
-                    style: TextStyle(
-                      color: index % 2 != 0 ? Colors.black : Colors.white,
-                      fontSize: 14.0.sp,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
+                  FutureBuilder(
+                      future: _calculateRemainingAmount(
+                        amount: spent,
+                        total: double.parse(budget['amount'].toString()),
+                        currency: budget['currency'],
+                      ),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const SizedBox();
+                        }
+
+                        final remaining = snapshot.data as String;
+                        return Text(
+                          remaining,
+                          style: TextStyle(
+                            color: index % 2 != 0 ? Colors.black : Colors.white,
+                            fontSize: 14.0.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        );
+                      }),
                 ],
               ),
             ),

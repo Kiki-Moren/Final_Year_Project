@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:final_year_project_kiki/routes.dart';
 import 'package:final_year_project_kiki/services/app.dart';
 import 'package:final_year_project_kiki/state/app_state.dart';
@@ -22,7 +23,10 @@ class WhatIfScreen extends ConsumerStatefulWidget {
 
 class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
   final _percentageController = TextEditingController();
+  double _remainingAmount = 0;
+  String? bottomPart;
   String? _selectedCurrency;
+  String? _selectedChoice;
   bool _isLoading = false;
   double? _rate;
   final _budgets = Supabase.instance.client
@@ -68,7 +72,9 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
 
     setState(() {
       _isLoading = false;
-      _rate = rate * double.parse(_percentageController.text);
+      _rate = _selectedChoice == "Up"
+          ? rate / double.parse(_percentageController.text)
+          : rate * double.parse(_percentageController.text);
     });
   }
 
@@ -100,6 +106,10 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
         remainingAmount = 0;
       }
     }
+    if (index == budgets.length - 1) {
+      _calculateTotalAmountLeft(
+          total: totalSavings, remaining: remainingAmount);
+    }
 
     return remainingBudgets;
   }
@@ -126,6 +136,46 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
     }
   }
 
+  Future<double> _convertToNGN({
+    required double amount,
+    required String currency,
+  }) async {
+    final rate = await ref.read(appApiProvider).getExchangeRate(
+          fromCurrency: currency,
+          toCurrency: "NGN",
+          ref: ref,
+          onError: (_) {},
+        );
+
+    return amount * rate;
+  }
+
+  Future<String> _calculateRemainingAmount({
+    required double amount,
+    required double total,
+    required String currency,
+  }) async {
+    double remaining = await _convertToNGN(
+      amount: total - amount,
+      currency: currency,
+    );
+
+    if (total - amount <= 0) {
+      return "Well done you have enough for your budget!";
+    }
+
+    _remainingAmount += remaining;
+
+    return "You need ${NumberFormat.currency(locale: "en_US", symbol: "NGN").format(remaining)} more to reach your goal";
+  }
+
+  Future<String> _calculateTotalAmountLeft({
+    required double total,
+    required double? remaining,
+  }) async {
+    return "You will need a total of ${NumberFormat.currency(locale: "en_US", symbol: "NGN").format(_remainingAmount)} more - that's ${NumberFormat.currency(locale: "en_US", symbol: "NGN").format(total - _remainingAmount)} less than you need today";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -149,13 +199,36 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
+            DropDownField(
+              data: const ["Up", "Down"],
+              hint: "Select Base Currency",
+              selected: _selectedChoice,
+              label: "Choice",
+              onChanged: (String? value) {
+                setState(() {
+                  _selectedChoice = value;
+                });
+                _getExchangeRate();
+              },
+            ),
+            SizedBox(height: 20.0.h),
             InputField(
               controller: _percentageController,
               hint: "percentage",
               validator: (String? value) => null,
-              textInputType: TextInputType.number,
+              textInputType: const TextInputType.numberWithOptions(
+                decimal: true,
+                signed: true,
+              ),
+              formatters: [
+                CurrencyTextInputFormatter(
+                  decimalDigits: 2,
+                  symbol: '',
+                ),
+              ],
               onChanged: (String? value) => _getExchangeRate(),
-              label: "What if rate is down by (in percentage)",
+              label:
+                  "What if rate is ${_selectedChoice == "Up" ? "up by (in percentage)" : "down by (in percentage)"}",
             ),
             SizedBox(height: 20.0.h),
             DropDownField(
@@ -203,55 +276,79 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
                   }
                   final budgets = snapshot.data!;
                   return StreamBuilder(
-                      stream: _savings,
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const SizedBox();
-                        }
-                        final savings = snapshot.data!.first;
+                    stream: _savings,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const SizedBox();
+                      }
+                      final savings = snapshot.data!.first;
 
-                        return ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemBuilder: (ctx, idx) {
-                            return FutureBuilder(
-                                future: _calculateCurrentAmountInSavedCurrency(
-                                  amount: double.parse(
-                                      savings['amount'].toString()),
-                                  currency: budgets[idx]['currency'],
-                                ),
-                                builder: (context, snapshot) {
-                                  if (!snapshot.hasData) {
-                                    return const SizedBox();
-                                  }
+                      return ListView.separated(
+                        shrinkWrap: true,
+                        itemBuilder: (ctx, idx) {
+                          return FutureBuilder(
+                            future: _calculateCurrentAmountInSavedCurrency(
+                              amount:
+                                  double.parse(savings['amount'].toString()),
+                              currency: budgets[idx]['currency'],
+                            ),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const SizedBox();
+                              }
 
-                                  final amount = snapshot.data as double;
+                              final amount = snapshot.data as double;
 
-                                  final remainingBudgets = _spreadSavings(
-                                    budgets: budgets
-                                        .map((e) => double.parse(
-                                            e['amount'].toString()))
-                                        .toList(),
-                                    totalSavings: amount,
-                                    index: idx,
-                                  );
+                              final remainingBudgets = _spreadSavings(
+                                budgets: budgets
+                                    .map((e) =>
+                                        double.parse(e['amount'].toString()))
+                                    .toList(),
+                                totalSavings: amount,
+                                index: idx,
+                              );
 
-                                  return _buildBudgetItem(
-                                    budget: budgets[idx],
-                                    index: idx,
-                                    spent: remainingBudgets[idx],
-                                    savings: savings,
-                                  );
-                                });
-                          },
-                          separatorBuilder: (ctx, idx) =>
-                              SizedBox(height: 10.0.h),
-                          itemCount: budgets.length,
-                        );
-                      });
+                              return _buildBudgetItem(
+                                budget: budgets[idx],
+                                index: idx,
+                                spent: remainingBudgets[idx],
+                                savings: savings,
+                                total: budgets.length,
+                              );
+                            },
+                          );
+                        },
+                        separatorBuilder: (ctx, idx) =>
+                            SizedBox(height: 10.0.h),
+                        itemCount: budgets.length,
+                      );
+                    },
+                  );
                 },
               ),
             ),
+            // FutureBuilder(
+            //   future: _calculateTotalAmountLeft(
+            //     total: _remainingAmount,
+            //     remaining: _remainingAmount,
+            //   ),
+            //   builder: (context, snapshot) {
+            //     if (!snapshot.hasData) {
+            //       return const SizedBox();
+            //     }
+
+            //     bottomPart = snapshot.data as String;
+
+            //     return Text(
+            //       bottomPart ?? '',
+            //       style: TextStyle(
+            //         color: Colors.black,
+            //         fontSize: 16.0.sp,
+            //         fontWeight: FontWeight.w400,
+            //       ),
+            //     );
+            //   },
+            // ),
           ],
         ),
       ),
@@ -261,9 +358,28 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
   Widget _buildBudgetItem({
     required Map<String, dynamic> budget,
     required int index,
+    required int total,
     required double spent,
     required Map<String, dynamic> savings,
   }) {
+    final String publicUrl = Supabase.instance.client.storage
+        .from('public-bucket')
+        .getPublicUrl(budget['image']);
+
+    // Split the URL based on '/'
+    List<String> parts = publicUrl.split('/');
+
+    // Iterate through the parts and remove 'public-bucket'
+    List<String> updatedParts = [];
+    for (String part in parts) {
+      if (part != "public-bucket") {
+        updatedParts.add(part);
+      }
+    }
+
+    // Reconstruct the URL
+    String updatedUrl = updatedParts.join('/');
+
     return GestureDetector(
       onTap: () async {
         await Navigator.of(context).pushNamed(
@@ -284,7 +400,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
         child: Row(
           children: [
             CachedNetworkImage(
-              imageUrl: 'https://picsum.photos/200',
+              imageUrl: updatedUrl,
               imageBuilder: (context, imageProvider) => Container(
                 width: 80.w,
                 height: 100.h,
@@ -346,13 +462,28 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
                     progressColor: Colors.blue,
                   ),
                   SizedBox(height: 10.0.h),
-                  Text(
-                    "You need ${NumberFormat.currency(locale: "en_US", symbol: budget['currency']).format(double.parse(budget['amount'].toString()) - spent)} more to reach your goal",
-                    style: TextStyle(
-                      color: index % 2 != 0 ? Colors.black : Colors.white,
-                      fontSize: 14.0.sp,
-                      fontWeight: FontWeight.w400,
+                  FutureBuilder(
+                    future: _calculateRemainingAmount(
+                      amount: spent,
+                      total: double.parse(budget['amount'].toString()),
+                      currency: budget['currency'],
                     ),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const SizedBox();
+                      }
+
+                      final remaining = snapshot.data as String;
+
+                      return Text(
+                        remaining,
+                        style: TextStyle(
+                          color: index % 2 != 0 ? Colors.black : Colors.white,
+                          fontSize: 14.0.sp,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
