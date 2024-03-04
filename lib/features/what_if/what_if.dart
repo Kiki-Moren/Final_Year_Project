@@ -115,11 +115,15 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
           onError: (_) {},
         );
 
-    return amount *
-        rate /
-        double.parse(_percentageController.text.isEmpty
-            ? "1"
-            : _percentageController.text);
+    if (_selectedCurrency == currency) {
+      return amount *
+          rate /
+          double.parse(_percentageController.text.isEmpty
+              ? "1"
+              : _percentageController.text);
+    } else {
+      return amount * rate;
+    }
   }
 
   @override
