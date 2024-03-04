@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeTab extends ConsumerStatefulWidget {
@@ -207,9 +208,10 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             }
 
             final activities = snapshot.data as List;
-            final shownActiviest = activities.length > 2
-                ? activities.sublist(0, 2)
-                : activities.sublist(0, activities.length);
+            Logger().i(activities);
+            // get the last two records
+            final shownActiviest = activities.reversed.toList().sublist(0, 2);
+            Logger().i(shownActiviest);
 
             return ListView.separated(
               itemBuilder: (ctx, idx) => _buildRecentItem(
