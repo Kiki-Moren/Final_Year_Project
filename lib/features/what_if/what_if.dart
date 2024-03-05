@@ -154,15 +154,17 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
       if (_selectedChoice == "Down") {
         return amount *
             rate /
-            double.parse(_percentageController.text.isEmpty
-                ? "1"
-                : _percentageController.text);
+            (double.parse(_percentageController.text.isEmpty
+                    ? "1"
+                    : _percentageController.text) /
+                100);
       } else {
         return amount *
             rate *
-            double.parse(_percentageController.text.isEmpty
-                ? "1"
-                : _percentageController.text);
+            (double.parse(_percentageController.text.isEmpty
+                    ? "1"
+                    : _percentageController.text) /
+                100);
       }
     } else {
       return amount * rate;
