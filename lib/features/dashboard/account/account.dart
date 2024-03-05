@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../widgets/more_items_widgets.dart';
@@ -109,18 +110,34 @@ class _AccountTabState extends State<AccountTab> {
               text: "Currency",
               suffix: Row(
                 children: [
-                  Text(
-                    "NGN",
-                    style: TextStyle(
-                      fontSize: 12.0.sp,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  StreamBuilder(
+                    stream: Supabase.instance.client
+                        .from('users')
+                        .stream(primaryKey: ['id']).eq('user_id',
+                            Supabase.instance.client.auth.currentUser!.id),
+                    builder: (context, snapshot) {
+                      Logger().d(snapshot.data);
+                      if (!snapshot.hasData) {
+                        return const SizedBox();
+                      }
+                      final currency = snapshot.data!.first['base_currency'];
+
+                      return Text(
+                        currency,
+                        style: TextStyle(
+                          fontSize: 12.0.sp,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      );
+                    },
                   ),
                   // const Icon(Icons.navigate_next, color: Colors.white)
                 ],
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).pushNamed(AppRoutes.changeCurrency);
+              },
             ),
             SizedBox(height: 3.0.h),
             MoreItemsWidget(

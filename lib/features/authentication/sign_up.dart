@@ -1,7 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:final_year_project_kiki/state/app_state.dart';
+import 'package:final_year_project_kiki/widgets/drop_down_field.dart';
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -9,14 +12,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../routes.dart';
 import '../../widgets/input_field.dart';
 
-class SignUpScreen extends StatefulWidget {
+class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _fistNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -24,6 +27,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+  String? _currency;
   bool _loading = false;
 
   @override
@@ -64,6 +68,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             'last_name': _lastNameController.text,
             'username': _usernameController.text,
             'email': _emailController.text,
+            'base_currency': _currency,
           });
 
           Navigator.of(context)
@@ -166,6 +171,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     return "Email is required";
                   }
                   return null;
+                },
+              ),
+              SizedBox(height: 15.0.h),
+              DropDownField(
+                validator: (String? value) {
+                  if (value == null) {
+                    return "Base Currency is required";
+                  }
+                  return null;
+                },
+                data: ref.watch(currencies).map((e) => e.currency!).toList(),
+                hint: "Select Base Currency",
+                selected: _currency,
+                label: "Base Currency",
+                onChanged: (String? value) {
+                  setState(() {
+                    _currency = value;
+                  });
                 },
               ),
               SizedBox(height: 15.0.h),

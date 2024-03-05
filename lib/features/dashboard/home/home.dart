@@ -18,6 +18,7 @@ class HomeTab extends ConsumerStatefulWidget {
 }
 
 class _HomeTabState extends ConsumerState<HomeTab> {
+  Map<String, dynamic>? _userData;
   final _savings = Supabase.instance.client
       .from('savings')
       .stream(primaryKey: ['id']).eq(
@@ -32,6 +33,21 @@ class _HomeTabState extends ConsumerState<HomeTab> {
       .from('activities')
       .stream(primaryKey: ['id']).eq(
           'user_id', Supabase.instance.client.auth.currentUser!.id);
+
+  @override
+  void initState() {
+    _getUser();
+    super.initState();
+  }
+
+  void _getUser() async {
+    _userData = await Supabase.instance.client
+        .from('users')
+        .select()
+        .eq('user_id', Supabase.instance.client.auth.currentUser!.id)
+        .single();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +140,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Exchange Rate (USD - NGN)",
+          "Exchange Rate (USD - ${_userData?['base_currency'] ?? "NGN"})",
           style: TextStyle(
             fontSize: 24.0.sp,
             fontWeight: FontWeight.w400,
@@ -138,7 +154,9 @@ class _HomeTabState extends ConsumerState<HomeTab> {
   // Build the exchange rate chart
   Widget _buildChart() {
     var exchangeRates = Data.exchangeRates
-        .firstWhere((element) => element["currency"] == "NGN")["rates"]
+        .firstWhere((element) =>
+            element["currency"] ==
+            (_userData?['base_currency'] ?? "NGN"))["rates"]
         .map((e) => e["rate"])
         .toList();
 
@@ -367,7 +385,8 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                 }
                 final saving = snapshot.data!.first;
                 return Text(
-                  NumberFormat.currency(locale: "en_US", symbol: "₦")
+                  NumberFormat.currency(
+                          locale: "en_US", symbol: saving['base_currency'])
                       .format(saving['amount']),
                   style: TextStyle(
                     fontSize: 34.0.sp,

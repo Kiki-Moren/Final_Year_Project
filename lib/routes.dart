@@ -2,6 +2,7 @@ import 'package:final_year_project_kiki/features/authentication/initiate_reset_p
 import 'package:final_year_project_kiki/features/authentication/reset_password.dart';
 import 'package:final_year_project_kiki/features/budget/add.dart';
 import 'package:final_year_project_kiki/features/budget/edit.dart';
+import 'package:final_year_project_kiki/features/change_currency/change_currency.dart';
 import 'package:final_year_project_kiki/features/profile/profile.dart';
 import 'package:final_year_project_kiki/features/savings/savings.dart';
 import 'package:final_year_project_kiki/features/what_if/what_if.dart';
@@ -26,6 +27,7 @@ class AppRoutes {
     initiateResetPassword: (context) => const InitiatePasswordResetScreen(),
     resetPassword: (context) => const ResetPasswordScreen(),
     whatIf: (context) => const WhatIfScreen(),
+    changeCurrency: (context) => const ChangeCurrencyScreen(),
   };
 
   // Define paths
@@ -40,4 +42,5 @@ class AppRoutes {
   static String initiateResetPassword = '/initiate-reset-password';
   static String resetPassword = '/reset-password';
   static String whatIf = '/whatIf';
+  static String changeCurrency = '/changeCurrency';
 }

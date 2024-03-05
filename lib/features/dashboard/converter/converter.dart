@@ -28,11 +28,27 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
   String? _toCurrency;
   bool _isLoading = false;
   double? _convertedAmount;
+  Map<String, dynamic>? _userData;
 
   final _user = Supabase.instance.client
       .from('users')
       .stream(primaryKey: ['id']).eq(
           'user_id', Supabase.instance.client.auth.currentUser!.id);
+
+  @override
+  void initState() {
+    _getUser();
+    super.initState();
+  }
+
+  void _getUser() async {
+    _userData = await Supabase.instance.client
+        .from('users')
+        .select()
+        .eq('user_id', Supabase.instance.client.auth.currentUser!.id)
+        .single();
+    setState(() {});
+  }
 
   // Convert currency
   void _convertCurrency() async {
@@ -189,7 +205,7 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Exchange Rate (USD - NGN)",
+          "Exchange Rate (USD - ${_userData?['base_currency'] ?? "NGN"})",
           style: TextStyle(
             fontSize: 24.0.sp,
             fontWeight: FontWeight.w400,

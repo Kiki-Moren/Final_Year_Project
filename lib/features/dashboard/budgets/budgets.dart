@@ -17,6 +17,7 @@ class BudgetTab extends ConsumerStatefulWidget {
 }
 
 class _BudgetTabState extends ConsumerState<BudgetTab> {
+  Map<String, dynamic>? _userData;
   final _budgets = Supabase.instance.client
       .from('budgets')
       .stream(primaryKey: ['id'])
@@ -27,6 +28,21 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
       .from('savings')
       .stream(primaryKey: ['id']).eq(
           'user_id', Supabase.instance.client.auth.currentUser!.id);
+
+  @override
+  void initState() {
+    _getUser();
+    super.initState();
+  }
+
+  void _getUser() async {
+    _userData = await Supabase.instance.client
+        .from('users')
+        .select()
+        .eq('user_id', Supabase.instance.client.auth.currentUser!.id)
+        .single();
+    setState(() {});
+  }
 
   // Calculate the percentage of the amount spent
   double _calculatePercentage({
@@ -65,10 +81,11 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
   // Calculate the current amount in the saved currency
   Future<double> _calculateCurrentAmountInSavedCurrency({
     required double amount,
+    required String fromCurrency,
     required String currency,
   }) async {
     final rate = await ref.read(appApiProvider).getExchangeRate(
-          fromCurrency: "NGN",
+          fromCurrency: fromCurrency,
           toCurrency: currency,
           ref: ref,
           onError: (_) {},
@@ -77,14 +94,15 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     return amount * rate;
   }
 
-  // Convert the amount to NGN
-  Future<double> _convertToNGN({
+  // Convert the amount to Base Currency
+  Future<double> _convertToBaseCurrency({
     required double amount,
+    required String baseCurrency,
     required String currency,
   }) async {
     final rate = await ref.read(appApiProvider).getExchangeRate(
           fromCurrency: currency,
-          toCurrency: "NGN",
+          toCurrency: baseCurrency,
           ref: ref,
           onError: (_) {},
         );
@@ -97,16 +115,18 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     required double amount,
     required double total,
     required String currency,
+    required String baseCurrency,
   }) async {
     // NumberFormat.currency(locale: "en_US", symbol: budget['currency']).format(double.parse(budget['amount'].toString()) - spent);
 
-    double remaining = await _convertToNGN(
+    double remaining = await _convertToBaseCurrency(
       amount: total - amount,
       currency: currency,
+      baseCurrency: baseCurrency,
     );
     if (total - amount <= 0) return "Well done you have enough for your budget";
 
-    return "You need ${NumberFormat.currency(locale: "en_US", symbol: "NGN").format(remaining)} more to reach your goal";
+    return "You need ${NumberFormat.currency(locale: "en_US", symbol: baseCurrency).format(remaining)} more to reach your goal";
   }
 
   @override
@@ -157,7 +177,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
             FutureBuilder(
               future: ref.read(appApiProvider).getExchangeRate(
                     fromCurrency: "GBP",
-                    toCurrency: "NGN",
+                    toCurrency: _userData?['base_currency'] ?? "NGN",
                     ref: ref,
                     onError: (_) {},
                   ),
@@ -169,7 +189,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
                 final rate = snapshot.data as double;
 
                 return Text(
-                  "Rate Now: 1 GBP = ${NumberFormat.currency(locale: "en_US", symbol: "NGN").format(rate)}",
+                  "Rate Now: 1 GBP = ${NumberFormat.currency(locale: "en_US", symbol: _userData?['base_currency'] ?? "NGN").format(rate)}",
                   style: TextStyle(
                     fontSize: 16.0.sp,
                     fontWeight: FontWeight.w400,
@@ -201,6 +221,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
                               future: _calculateCurrentAmountInSavedCurrency(
                                 amount:
                                     double.parse(savings['amount'].toString()),
+                                fromCurrency: savings['base_currency'],
                                 currency: budgets[idx]['currency'],
                               ),
                               builder: (context, snapshot) {
@@ -385,6 +406,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
                         amount: spent,
                         total: double.parse(budget['amount'].toString()),
                         currency: budget['currency'],
+                        baseCurrency: savings['base_currency'],
                       ),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) {
@@ -443,7 +465,8 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
                 }
                 final saving = snapshot.data!.first;
                 return Text(
-                  NumberFormat.currency(locale: "en_US", symbol: "₦")
+                  NumberFormat.currency(
+                          locale: "en_US", symbol: saving['base_currency'])
                       .format(saving['amount']),
                   style: TextStyle(
                     fontSize: 24.0.sp,
