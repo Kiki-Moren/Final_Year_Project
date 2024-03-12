@@ -27,6 +27,8 @@ class DropDownField extends StatefulWidget {
 }
 
 class _DropDownFieldState extends State<DropDownField> {
+  String? dropdownValue;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -42,7 +44,7 @@ class _DropDownFieldState extends State<DropDownField> {
         SizedBox(height: 6.h),
         DropdownButtonHideUnderline(
           child: DropdownButtonFormField<String>(
-            value: widget.selected,
+            value: dropdownValue,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please select an option';
@@ -97,6 +99,9 @@ class _DropDownFieldState extends State<DropDownField> {
             ),
             iconSize: 24.0.w,
             onChanged: (String? newValue) {
+              setState(() {
+                dropdownValue = newValue;
+              });
               widget.onChanged!(newValue);
             },
             selectedItemBuilder: (BuildContext context) {

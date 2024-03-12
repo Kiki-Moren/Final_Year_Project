@@ -66,6 +66,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
     if (_percentageController.text.isEmpty || _selectedCurrency == null) {
       return;
     }
+    print("valuessss ${_percentageController.text}s $_selectedCurrency");
 
     setState(() {
       _isLoading = true;
@@ -248,9 +249,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
               selected: _selectedChoice,
               label: "Choice",
               onChanged: (String? value) {
-                setState(() {
-                  _selectedChoice = value;
-                });
+                _selectedChoice = value;
                 _getExchangeRate();
               },
             ),
@@ -280,9 +279,8 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
               selected: _selectedCurrency,
               label: "Base Currency",
               onChanged: (String? value) {
-                setState(() {
-                  _selectedCurrency = value;
-                });
+                _selectedCurrency = value;
+
                 _getExchangeRate();
               },
             ),
