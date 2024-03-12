@@ -1,6 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
-import 'package:final_year_project_kiki/routes.dart';
+import 'package:final_year_project_kiki/features/what_if/widgets/budget_item.dart';
 import 'package:final_year_project_kiki/services/app.dart';
 import 'package:final_year_project_kiki/state/app_state.dart';
 import 'package:final_year_project_kiki/widgets/drop_down_field.dart';
@@ -11,7 +10,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class WhatIfScreen extends ConsumerStatefulWidget {
@@ -66,7 +64,6 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
     if (_percentageController.text.isEmpty || _selectedCurrency == null) {
       return;
     }
-    print("valuessss ${_percentageController.text}s $_selectedCurrency");
 
     setState(() {
       _isLoading = true;
@@ -91,123 +88,9 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
       _isLoading = false;
       _remainingAmount = 0;
       _rate = _selectedChoice == "Up"
-          ? rate / double.parse(_percentageController.text)
-          : rate * double.parse(_percentageController.text);
+          ? rate * ((100 - double.parse(_percentageController.text)) / 100)
+          : rate * ((100 + double.parse(_percentageController.text)) / 100);
     });
-  }
-
-  // Calculate percentage
-  double _calculatePercentage({
-    required double amount,
-    required double total,
-  }) {
-    if (amount > total) return 1.0;
-
-    return amount / total;
-  }
-
-  // Spread savings
-  List<double> _spreadSavings({
-    required List<double> budgets,
-    required double totalSavings,
-    required String baseCurrency,
-    required int index,
-  }) {
-    double remainingAmount = totalSavings;
-    List<double> remainingBudgets = [];
-
-    // Iterate through each budget
-    for (double budget in budgets) {
-      // Check if there's enough savings to cover the budget
-      if (remainingAmount >= budget) {
-        remainingBudgets.add(budget);
-        remainingAmount -= budget;
-      } else {
-        remainingBudgets.add(remainingAmount);
-        remainingAmount = 0;
-      }
-    }
-    if (index == budgets.length - 1) {
-      _calculateTotalAmountLeft(
-        total: totalSavings,
-        remaining: remainingAmount,
-        baseCurrency: baseCurrency,
-      );
-    }
-
-    return remainingBudgets;
-  }
-
-  // Calculate current amount in saved currency
-  Future<double> _calculateCurrentAmountInSavedCurrency({
-    required double amount,
-    required String currency,
-    required String fromCurrency,
-  }) async {
-    final rate = await ref.read(appApiProvider).getExchangeRate(
-          fromCurrency: fromCurrency,
-          toCurrency: currency,
-          ref: ref,
-          onError: (_) {},
-        );
-
-    if (_selectedCurrency != currency) {
-      if (_selectedChoice == "Down") {
-        return amount *
-            rate /
-            (double.parse(_percentageController.text.isEmpty
-                    ? "1"
-                    : _percentageController.text) /
-                100);
-      } else {
-        return amount *
-            rate *
-            (double.parse(_percentageController.text.isEmpty
-                    ? "1"
-                    : _percentageController.text) /
-                100);
-      }
-    } else {
-      return amount * rate;
-    }
-  }
-
-  // Convert to Base currency
-  Future<double> _convertToBaseCurrency({
-    required double amount,
-    required String currency,
-    required String baseCurrency,
-  }) async {
-    final rate = await ref.read(appApiProvider).getExchangeRate(
-          fromCurrency: currency,
-          toCurrency: baseCurrency,
-          ref: ref,
-          onError: (_) {},
-        );
-
-    return amount * rate;
-  }
-
-  // Calculate remaining amount
-  Future<String> _calculateRemainingAmount({
-    required double amount,
-    required double total,
-    required String currency,
-    required String baseCurrency,
-  }) async {
-    double remaining = await _convertToBaseCurrency(
-      amount: total - amount,
-      currency: currency,
-      baseCurrency: baseCurrency,
-    );
-
-    if (total - amount <= 0) {
-      return "Well done you have enough for your budget!";
-    }
-
-    _remainingAmount += remaining;
-
-    return "You need ${NumberFormat.currency(locale: "en_US", symbol: baseCurrency).format(remaining)} more to reach your goal";
   }
 
   // Calculate total amount left
@@ -342,41 +225,21 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
 
                           return ListView.separated(
                             shrinkWrap: true,
-                            itemBuilder: (ctx, idx) {
-                              return FutureBuilder(
-                                future: _calculateCurrentAmountInSavedCurrency(
-                                  amount: double.parse(
-                                      savings['amount'].toString()),
-                                  fromCurrency: savings['base_currency'],
-                                  currency: budgets[idx]['currency'],
-                                ),
-                                builder: (context, snapshot) {
-                                  if (!snapshot.hasData) {
-                                    return const SizedBox();
-                                  }
-
-                                  final amount = snapshot.data as double;
-
-                                  final remainingBudgets = _spreadSavings(
-                                    budgets: budgets
-                                        .map((e) => double.parse(
-                                            e['amount'].toString()))
-                                        .toList(),
-                                    totalSavings: amount,
-                                    index: idx,
-                                    baseCurrency: savings['base_currency'],
-                                  );
-
-                                  return _buildBudgetItem(
-                                    budget: budgets[idx],
-                                    index: idx,
-                                    spent: remainingBudgets[idx],
-                                    savings: savings,
-                                    total: budgets.length,
-                                  );
-                                },
-                              );
-                            },
+                            itemBuilder: (ctx, idx) => BudgetItem(
+                              remainingAmount: _remainingAmount,
+                              budgets: budgets,
+                              choice: _selectedChoice ?? "",
+                              currency: _selectedCurrency ?? "",
+                              idx: idx,
+                              percentage: double.parse(
+                                  _percentageController.text.isEmpty
+                                      ? "1"
+                                      : _percentageController.text),
+                              savings: savings,
+                              updateRemainingAmount: ({required amount}) {
+                                _remainingAmount = amount;
+                              },
+                            ),
                             separatorBuilder: (ctx, idx) =>
                                 SizedBox(height: 10.0.h),
                             itemCount: budgets.length,
@@ -411,146 +274,5 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
               ],
             ),
           );
-  }
-
-  // Build the budget item
-  Widget _buildBudgetItem({
-    required Map<String, dynamic> budget,
-    required int index,
-    required int total,
-    required double spent,
-    required Map<String, dynamic> savings,
-  }) {
-    final String publicUrl = Supabase.instance.client.storage
-        .from('public-bucket')
-        .getPublicUrl(budget['image']);
-
-    // Split the URL based on '/'
-    List<String> parts = publicUrl.split('/');
-
-    // Iterate through the parts and remove 'public-bucket'
-    List<String> updatedParts = [];
-    for (String part in parts) {
-      if (part != "public-bucket") {
-        updatedParts.add(part);
-      }
-    }
-
-    // Reconstruct the URL
-    String updatedUrl = updatedParts.join('/');
-
-    return GestureDetector(
-      onTap: () async {
-        await Navigator.of(context).pushNamed(
-          AppRoutes.editBudget,
-          arguments: budget,
-        );
-        setState(() {});
-      },
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20.0.r),
-          color: index % 2 != 0
-              ? const Color(0xff82B9AE)
-              : const Color(0xff165A4A),
-        ),
-        child: Row(
-          children: [
-            CachedNetworkImage(
-              imageUrl: updatedUrl,
-              imageBuilder: (context, imageProvider) => Container(
-                width: 80.w,
-                height: 100.h,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.0.r),
-                  image: DecorationImage(
-                    image: imageProvider,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              errorWidget: (context, url, error) => Container(
-                width: 80.w,
-                height: 100.h,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.0.r),
-                  color: Colors.grey,
-                ),
-              ),
-            ),
-            SizedBox(width: 20.0.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        budget['name'],
-                        style: TextStyle(
-                          color: index % 2 != 0 ? Colors.black : Colors.white,
-                          fontSize: 20.0.sp,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      const Icon(Icons.navigate_next, color: Colors.white),
-                    ],
-                  ),
-                  SizedBox(height: 10.0.h),
-                  Text(
-                    "${NumberFormat.currency(locale: "en_US", symbol: budget['currency']).format(spent)} / ${NumberFormat.currency(locale: "en_US", symbol: budget['currency']).format(budget['amount'])}",
-                    style: TextStyle(
-                      color: index % 2 != 0 ? Colors.black : Colors.white,
-                      fontSize: 14.0.sp,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  SizedBox(height: 10.0.h),
-                  LinearPercentIndicator(
-                    width: 180.0.w,
-                    lineHeight: 8.0.w,
-                    percent: _calculatePercentage(
-                      amount: spent,
-                      total: double.parse(budget['amount'].toString()),
-                    ),
-                    barRadius: Radius.circular(10.0.r),
-                    backgroundColor: Colors.grey,
-                    progressColor: Colors.blue,
-                  ),
-                  SizedBox(height: 10.0.h),
-                  FutureBuilder(
-                    future: _calculateRemainingAmount(
-                      amount: spent,
-                      total: double.parse(budget['amount'].toString()),
-                      currency: budget['currency'],
-                      baseCurrency: savings['base_currency'],
-                    ),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const SizedBox();
-                      }
-
-                      final remaining = snapshot.data as String;
-
-                      return Text(
-                        remaining,
-                        style: TextStyle(
-                          color: index % 2 != 0 ? Colors.black : Colors.white,
-                          fontSize: 14.0.sp,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
