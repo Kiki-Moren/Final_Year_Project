@@ -3,7 +3,6 @@
 import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../routes.dart';
@@ -24,6 +23,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   void dispose() {
+    // Dispose the controllers
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -43,24 +43,29 @@ class _SignInScreenState extends State<SignInScreen> {
           password: _passwordController.text,
         );
 
+        // Hide the loading indicator
         setState(() {
           _loading = false;
         });
 
         if (response.session != null) {
+          // Navigate to the dashboard
           Navigator.of(context)
               .pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false);
         } else {
+          // Show a snackbar with the error message
           ScaffoldMessenger.of(context)
               .showSnackBar(const SnackBar(content: Text("Sign in failed")));
         }
       } catch (error) {
         AuthException authException = error as AuthException;
 
+        // Hide the loading indicator
         setState(() {
           _loading = false;
         });
-        Logger().d(error);
+
+        // Show a snackbar with the error message
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(authException.message)));
       }

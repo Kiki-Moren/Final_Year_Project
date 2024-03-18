@@ -34,6 +34,7 @@ class _RemainingWidgetState extends ConsumerState<RemainingWidget> {
     required String currency,
     required String baseCurrency,
   }) async {
+    // Get the exchange rate
     final rate = await ref.read(appApiProvider).getExchangeRate(
           fromCurrency: currency,
           toCurrency: baseCurrency,
@@ -49,6 +50,7 @@ class _RemainingWidgetState extends ConsumerState<RemainingWidget> {
     required double amount,
     required double total,
   }) {
+    // If amount is greater than total
     if (amount > total) return 1.0;
 
     return amount / total;
@@ -61,16 +63,19 @@ class _RemainingWidgetState extends ConsumerState<RemainingWidget> {
     required String currency,
     required String baseCurrency,
   }) async {
+    // Convert to base currency
     double remaining = await _convertToBaseCurrency(
       amount: total - amount,
       currency: currency,
       baseCurrency: baseCurrency,
     );
 
+    // If remaining is less than or equal to 0
     if (remaining <= 0) {
       return "Well done you have enough for your budget!";
     }
 
+    // Update remaining amount
     widget.updateRemainingAmount(amount: remaining);
 
     return "You need ${NumberFormat.currency(locale: "en_US", symbol: baseCurrency).format(remaining)} more to reach your goal";
@@ -90,6 +95,7 @@ class _RemainingWidgetState extends ConsumerState<RemainingWidget> {
           return const SizedBox();
         }
 
+        // Get remaining amount
         final remaining = snapshot.data as String;
 
         return Column(

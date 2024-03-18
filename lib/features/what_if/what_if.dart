@@ -28,29 +28,35 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
   bool _isLoading = false;
   double? _rate;
   Map<String, dynamic>? _user;
+
+  // Get budgets
   final _budgets = Supabase.instance.client
       .from('budgets')
       .stream(primaryKey: ['id'])
       .eq('user_id', Supabase.instance.client.auth.currentUser!.id)
       .order('amount', ascending: true);
 
+  // Get savings
   final _savings = Supabase.instance.client
       .from('savings')
       .stream(primaryKey: ['id']).eq(
           'user_id', Supabase.instance.client.auth.currentUser!.id);
   @override
   void initState() {
+    // Get the user
     _getUser();
     super.initState();
   }
 
   @override
   void dispose() {
+    // Dispose the controllers
     _percentageController.dispose();
     super.dispose();
   }
 
   void _getUser() async {
+    // Get the current user
     _user = await Supabase.instance.client
         .from('users')
         .select()
@@ -61,15 +67,19 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
 
   // Get exchange rate
   void _getExchangeRate() async {
+    // If percentage is empty or selected currency is empty
     if (_percentageController.text.isEmpty || _selectedCurrency == null) {
       return;
     }
 
+    // Show the loading indicator
     setState(() {
       _isLoading = true;
     });
 
+    // Get the exchange rate
     final appService = ref.read(appApiProvider);
+    // Get the exchange rate
     final rate = await appService.getExchangeRate(
       fromCurrency: _selectedCurrency!,
       toCurrency: _user?['base_currency'] ?? _selectedCurrency!,
@@ -84,6 +94,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
       },
     );
 
+    // Hide the loading indicator
     setState(() {
       _isLoading = false;
       _remainingAmount = 0;
@@ -91,15 +102,6 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
           ? rate * ((100 - double.parse(_percentageController.text)) / 100)
           : rate * ((100 + double.parse(_percentageController.text)) / 100);
     });
-  }
-
-  // Calculate total amount left
-  Future<String> _calculateTotalAmountLeft({
-    required double total,
-    required double? remaining,
-    required String baseCurrency,
-  }) async {
-    return "You will need a total of ${NumberFormat.currency(locale: "en_US", symbol: baseCurrency).format(_remainingAmount)} more - that's ${NumberFormat.currency(locale: "en_US", symbol: baseCurrency).format(total - _remainingAmount)} less than you need today";
   }
 
   @override

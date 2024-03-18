@@ -18,17 +18,21 @@ class HomeTab extends ConsumerStatefulWidget {
 }
 
 class _HomeTabState extends ConsumerState<HomeTab> {
+  // User data
   Map<String, dynamic>? _userData;
+  // Stream the user savings
   final _savings = Supabase.instance.client
       .from('savings')
       .stream(primaryKey: ['id']).eq(
           'user_id', Supabase.instance.client.auth.currentUser!.id);
 
+  // Stream the user data
   final _user = Supabase.instance.client
       .from('users')
       .stream(primaryKey: ['id']).eq(
           'user_id', Supabase.instance.client.auth.currentUser!.id);
 
+  // Stream the user activities
   final _activities = Supabase.instance.client
       .from('activities')
       .stream(primaryKey: ['id']).eq(
@@ -36,11 +40,13 @@ class _HomeTabState extends ConsumerState<HomeTab> {
 
   @override
   void initState() {
+    // Get the user data
     _getUser();
     super.initState();
   }
 
   void _getUser() async {
+    // Get the user data
     _userData = await Supabase.instance.client
         .from('users')
         .select()

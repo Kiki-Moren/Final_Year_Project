@@ -22,8 +22,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   void initState() {
+    // Create wallet
     _createWallet();
     super.initState();
+    // Load initial values
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(appApiProvider).getCurrencies(ref: ref, onError: (_) {});
     });
@@ -31,11 +33,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   // Create wallet
   void _createWallet() async {
+    // Get the user's savings
     final savings = await Supabase.instance.client
         .from('savings')
         .select()
         .eq('user_id', Supabase.instance.client.auth.currentUser!.id);
 
+    // Create the wallet if it doesn't exist
     if (savings.isEmpty) {
       await Supabase.instance.client.from('savings').upsert({
         'user_id': Supabase.instance.client.auth.currentUser!.id,

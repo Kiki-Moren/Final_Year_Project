@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+// Debouncer
 class Debouncer {
   final Duration delay;
   Timer? _timer;

@@ -32,6 +32,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
 
   @override
   void dispose() {
+    // Dispose the controllers
     _nameController.dispose();
     _amountController.dispose();
     super.dispose();
@@ -43,13 +44,15 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
       setState(() {
         _loading = true;
       });
-      // Save budget to database
+
       if (_image == null) return;
 
+      // Get the current user
       final user = Supabase.instance.client.auth.currentUser;
-
+      // Upload image to Supabase Storage
       final imagePath = await uploadImage();
       if (imagePath != null) {
+        // Save budget to database
         await Supabase.instance.client.from('budgets').insert({
           'user_id': user!.id,
           'name': _nameController.text,
@@ -58,10 +61,12 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
           'image': imagePath,
         });
 
+        // Hide the loading indicator
         setState(() {
           _loading = false;
         });
 
+        // Add activity to the user's activity feed
         ref
             .read(appApiProvider)
             .addActivity(title: "Added budget ${_nameController.text}");
@@ -73,9 +78,11 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
             backgroundColor: Colors.green,
           ),
         );
+        // Clear the form
         _amountController.clear();
         _nameController.clear();
       } else {
+        // Hide the loading indicator
         setState(() {
           _loading = false;
         });
@@ -95,6 +102,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
               );
       return response;
     } catch (e) {
+      // Show a snackbar if the image upload failed
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Error uploading image"),

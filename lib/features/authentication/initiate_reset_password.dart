@@ -24,6 +24,7 @@ class _InitiatePasswordResetScreenState
 
   @override
   void dispose() {
+    // Dispose the controllers
     _emailController.dispose();
     super.dispose();
   }

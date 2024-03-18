@@ -24,6 +24,7 @@ class _SavingBudgetScreenState extends ConsumerState<SavingBudgetScreen> {
 
   @override
   void dispose() {
+    // Dispose the controllers
     _amountController.dispose();
     super.dispose();
   }
@@ -31,29 +32,35 @@ class _SavingBudgetScreenState extends ConsumerState<SavingBudgetScreen> {
   // Top up savings
   void _topUpSavings() async {
     if (_formKey.currentState!.validate()) {
+      // Show the loading indicator
       setState(() {
         _isLoading = true;
       });
 
+      // Get the current user's savings
       final savings = await Supabase.instance.client
           .from('savings')
           .select()
           .eq('user_id', Supabase.instance.client.auth.currentUser!.id)
           .single();
 
+      // Update the savings
       await Supabase.instance.client.from('savings').upsert({
         'id': savings['id'],
         'amount': savings['amount'] +
             double.parse(_amountController.text.replaceAll(',', '')),
       });
 
+      // Hide the loading indicator
       setState(() {
         _isLoading = false;
       });
 
+      // Add activity
       ref.read(appApiProvider).addActivity(
           title: "Topped up savings with ${_amountController.text}");
 
+      // Show a snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Savings topped up successfully"),
@@ -68,16 +75,19 @@ class _SavingBudgetScreenState extends ConsumerState<SavingBudgetScreen> {
   // Reduce savings
   void _reduceSavings() async {
     if (_formKey.currentState!.validate()) {
+      // Show the loading indicator
       setState(() {
         _isLoading = true;
       });
 
+      // Get the current user's savings
       final savings = await Supabase.instance.client
           .from('savings')
           .select()
           .eq('user_id', Supabase.instance.client.auth.currentUser!.id)
           .single();
 
+      // Check if the user has enough funds
       if (savings['amount'] <
           double.parse(_amountController.text.replaceAll(',', ''))) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -86,26 +96,32 @@ class _SavingBudgetScreenState extends ConsumerState<SavingBudgetScreen> {
             backgroundColor: Colors.red,
           ),
         );
+
+        // Hide the loading indicator
         setState(() {
           _isLoading = false;
         });
         return;
       }
 
+      // Update the savings
       await Supabase.instance.client.from('savings').upsert({
         'id': savings['id'],
         'amount': savings['amount'] -
             double.parse(_amountController.text.replaceAll(',', '')),
       });
 
+      // Hide the loading indicator
       setState(() {
         _isLoading = false;
       });
 
+      // Add activity
       ref
           .read(appApiProvider)
           .addActivity(title: "Reduced savings with ${_amountController.text}");
 
+      // Show a snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Savings reduced up successfully"),

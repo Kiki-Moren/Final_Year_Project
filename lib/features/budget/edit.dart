@@ -31,11 +31,13 @@ class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
   @override
   void initState() {
     super.initState();
+    // Load initial values
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadInitialValues());
   }
 
   @override
   void dispose() {
+    // Dispose the controllers
     _nameController.dispose();
     _amountController.dispose();
     super.dispose();
@@ -43,6 +45,7 @@ class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
 
   // Load initial values
   void _loadInitialValues() async {
+    // Get the budget from the arguments
     budget = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     _nameController.text = budget!['name'].toString();
     _amountController.text = budget!['amount'].toString();
@@ -57,7 +60,6 @@ class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
         _loading = true;
       });
       // update budget to database
-
       await Supabase.instance.client.from('budgets').update({
         'name': _nameController.text,
         'currency': _currency,
@@ -80,6 +82,7 @@ class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
 
   // Delete budget from database
   void _delete() async {
+    // Show loading indicator
     setState(() {
       _loadingDelete = true;
     });
@@ -90,10 +93,12 @@ class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
         .delete()
         .eq('id', budget!['id']);
 
+    // Hide loading indicator
     setState(() {
       _loadingDelete = false;
     });
 
+    // Add activity to the user's activity feed
     ref
         .read(appApiProvider)
         .addActivity(title: "Edited budget ${_nameController.text}");

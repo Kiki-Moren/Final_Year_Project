@@ -30,6 +30,7 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
   double? _convertedAmount;
   Map<String, dynamic>? _userData;
 
+  // Stream the user data
   final _user = Supabase.instance.client
       .from('users')
       .stream(primaryKey: ['id']).eq(
@@ -37,11 +38,13 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
 
   @override
   void initState() {
+    // Get the user data
     _getUser();
     super.initState();
   }
 
   void _getUser() async {
+    // Get the user data
     _userData = await Supabase.instance.client
         .from('users')
         .select()
@@ -62,6 +65,7 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
       _isLoading = true;
     });
 
+    // Get the conversion value
     double amount = await ref.read(appApiProvider).getConversionValue(
           fromCurrency: _fromCurrency!,
           toCurrency: _toCurrency!,
@@ -77,6 +81,7 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
 
   @override
   void dispose() {
+    // Dispose the controllers
     _amountController.dispose();
     super.dispose();
   }

@@ -17,13 +17,16 @@ class BudgetTab extends ConsumerStatefulWidget {
 }
 
 class _BudgetTabState extends ConsumerState<BudgetTab> {
+  // User data
   Map<String, dynamic>? _userData;
+  // Budgets
   final _budgets = Supabase.instance.client
       .from('budgets')
       .stream(primaryKey: ['id'])
       .eq('user_id', Supabase.instance.client.auth.currentUser!.id)
       .order('amount', ascending: true);
 
+  // Savings
   final _savings = Supabase.instance.client
       .from('savings')
       .stream(primaryKey: ['id']).eq(
@@ -31,11 +34,13 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
 
   @override
   void initState() {
+    // Get the user data
     _getUser();
     super.initState();
   }
 
   void _getUser() async {
+    // Get the user data
     _userData = await Supabase.instance.client
         .from('users')
         .select()
@@ -49,6 +54,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     required double amount,
     required double total,
   }) {
+    // Check if the amount is greater than the total
     if (amount > total) return 1.0;
 
     return amount / total;
@@ -60,6 +66,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     required double totalSavings,
     required int index,
   }) {
+    // Calculate the remaining amount
     double remainingAmount = totalSavings;
     List<double> remainingBudgets = [];
 
@@ -84,6 +91,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     required String fromCurrency,
     required String currency,
   }) async {
+    // Get the exchange rate
     final rate = await ref.read(appApiProvider).getExchangeRate(
           fromCurrency: fromCurrency,
           toCurrency: currency,
@@ -100,6 +108,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     required String baseCurrency,
     required String currency,
   }) async {
+    // Get the exchange rate
     final rate = await ref.read(appApiProvider).getExchangeRate(
           fromCurrency: currency,
           toCurrency: baseCurrency,
@@ -117,15 +126,16 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     required String currency,
     required String baseCurrency,
   }) async {
-    // NumberFormat.currency(locale: "en_US", symbol: budget['currency']).format(double.parse(budget['amount'].toString()) - spent);
-
+    // Convert the amount to the base currency
     double remaining = await _convertToBaseCurrency(
       amount: total - amount,
       currency: currency,
       baseCurrency: baseCurrency,
     );
+    // Check if the remaining amount is less than or equal to 0
     if (total - amount <= 0) return "Well done you have enough for your budget";
 
+    // Return the remaining amount
     return "You need ${NumberFormat.currency(locale: "en_US", symbol: baseCurrency).format(remaining)} more to reach your goal";
   }
 
@@ -175,6 +185,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
               ),
             ),
             FutureBuilder(
+              // Get the exchange rate
               future: ref.read(appApiProvider).getExchangeRate(
                     fromCurrency: "GBP",
                     toCurrency: _userData?['base_currency'] ?? "NGN",
@@ -186,8 +197,10 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
                   return const SizedBox();
                 }
 
+                // Get the exchange rate
                 final rate = snapshot.data as double;
 
+                // Return the exchange rate
                 return Text(
                   "Rate Now: 1 GBP = ${NumberFormat.currency(locale: "en_US", symbol: _userData?['base_currency'] ?? "NGN").format(rate)}",
                   style: TextStyle(
@@ -201,52 +214,59 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
             StreamBuilder(
               stream: _budgets,
               builder: (context, snapshot) {
+                // Check if the snapshot has data
                 if (!snapshot.hasData) {
                   return const SizedBox();
                 }
+                // Get the budgets
                 final budgets = snapshot.data!;
                 return StreamBuilder(
                     stream: _savings,
                     builder: (context, snapshot) {
+                      // Check if the snapshot has data
                       if (!snapshot.hasData) {
                         return const SizedBox();
                       }
+                      // Get the savings
                       final savings = snapshot.data!.first;
 
+                      // Return the list of budgets
                       return ListView.separated(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemBuilder: (ctx, idx) {
                           return FutureBuilder(
-                              future: _calculateCurrentAmountInSavedCurrency(
-                                amount:
-                                    double.parse(savings['amount'].toString()),
-                                fromCurrency: savings['base_currency'],
-                                currency: budgets[idx]['currency'],
-                              ),
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData) {
-                                  return const SizedBox();
-                                }
-
-                                final amount = snapshot.data as double;
-
-                                final remainingBudgets = _spreadSavings(
-                                  budgets: budgets
-                                      .map((e) =>
-                                          double.parse(e['amount'].toString()))
-                                      .toList(),
-                                  totalSavings: amount,
-                                  index: idx,
-                                );
-
-                                return _buildBudgetItem(
-                                  budget: budgets[idx],
-                                  index: idx,
-                                  spent: remainingBudgets[idx],
-                                  savings: savings,
-                                );
-                              });
+                            // Calculate the current amount in the saved currency
+                            future: _calculateCurrentAmountInSavedCurrency(
+                              amount:
+                                  double.parse(savings['amount'].toString()),
+                              fromCurrency: savings['base_currency'],
+                              currency: budgets[idx]['currency'],
+                            ),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const SizedBox();
+                              }
+                              // Get the amount
+                              final amount = snapshot.data as double;
+                              // Spread the savings across the budgets
+                              final remainingBudgets = _spreadSavings(
+                                budgets: budgets
+                                    .map((e) =>
+                                        double.parse(e['amount'].toString()))
+                                    .toList(),
+                                totalSavings: amount,
+                                index: idx,
+                              );
+                              // Return the budget item
+                              return _buildBudgetItem(
+                                budget: budgets[idx],
+                                index: idx,
+                                spent: remainingBudgets[idx],
+                                savings: savings,
+                              );
+                            },
+                          );
                         },
                         separatorBuilder: (ctx, idx) =>
                             SizedBox(height: 10.0.h),
@@ -301,6 +321,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
     required double spent,
     required Map<String, dynamic> savings,
   }) {
+    // Get the image public URL
     final String publicUrl = Supabase.instance.client.storage
         .from('public-bucket')
         .getPublicUrl(budget['image']);
@@ -402,6 +423,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
                   ),
                   SizedBox(height: 10.0.h),
                   FutureBuilder(
+                      // Calculate the remaining amount
                       future: _calculateRemainingAmount(
                         amount: spent,
                         total: double.parse(budget['amount'].toString()),
@@ -412,7 +434,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
                         if (!snapshot.hasData) {
                           return const SizedBox();
                         }
-
+                        // Get the remaining amount
                         final remaining = snapshot.data as String;
                         return Text(
                           remaining,

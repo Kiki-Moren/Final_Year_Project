@@ -6,7 +6,6 @@ import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ResetPasswordScreen extends ConsumerStatefulWidget {
@@ -55,26 +54,27 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
       // Send the password reset email
       try {
-        final recovery = await Supabase.instance.client.auth.verifyOTP(
+        await Supabase.instance.client.auth.verifyOTP(
           email: _emailController.text,
           token: _tokenController.text,
           type: OtpType.recovery,
         );
-
-        Logger().i(recovery);
 
         // Update the user's password
         await Supabase.instance.client.auth.updateUser(
           UserAttributes(password: _passwordController.text),
         );
 
+        // navigate to the sign in screen
         Navigator.of(context)
             .pushNamedAndRemoveUntil(AppRoutes.signIn, (route) => false);
       } catch (e) {
+        // Show a snackbar if the password reset failed
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Password reset failed")));
       }
 
+      // Hide the loading indicator
       setState(() {
         _loading = false;
       });

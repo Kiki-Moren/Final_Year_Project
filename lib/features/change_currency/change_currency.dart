@@ -27,6 +27,7 @@ class _ChangeCurrencyScreenState extends ConsumerState<ChangeCurrencyScreen> {
     required String fromCurrency,
     required String currency,
   }) async {
+    // Get the exchange rate
     final rate = await ref.read(appApiProvider).getExchangeRate(
           fromCurrency: fromCurrency,
           toCurrency: currency,
@@ -39,16 +40,19 @@ class _ChangeCurrencyScreenState extends ConsumerState<ChangeCurrencyScreen> {
 
   void _updateBaseCurrency() async {
     if (_formKey.currentState!.validate()) {
+      // Show the loading indicator
       setState(() {
         _loading = true;
       });
 
+      // Get the current user's savings
       final savings = await Supabase.instance.client
           .from('savings')
           .select()
           .eq('user_id', Supabase.instance.client.auth.currentUser!.id)
           .single();
 
+      // Calculate the amount in the new currency
       final amount = await _calculateCurrentAmountInSavedCurrency(
         amount: double.parse(savings['amount'].toString()),
         currency: _currency!,
@@ -56,24 +60,29 @@ class _ChangeCurrencyScreenState extends ConsumerState<ChangeCurrencyScreen> {
       );
 
       try {
+        // Update the user's base currency
         await Supabase.instance.client.from('users').update({
           'base_currency': _currency,
         }).match({'user_id': Supabase.instance.client.auth.currentUser!.id});
 
+        // Update the user's savings
         await Supabase.instance.client.from('savings').update({
           'base_currency': _currency,
           'amount': amount,
         }).match({'user_id': Supabase.instance.client.auth.currentUser!.id});
 
+        // Hide the loading indicator
         setState(() {
           _loading = false;
         });
 
         Navigator.pop(context);
       } catch (e) {
+        // Hide the loading indicator
         setState(() {
           _loading = false;
         });
+        // Show a snackbar if the update failed
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('An error occurred. Please try again.'),

@@ -6,6 +6,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 
 class AppMethods {
+  // Create Material Color
   static MaterialColor createMaterialColor(Color color) {
     List<int> strengths = <int>[
       50,
@@ -19,6 +20,7 @@ class AppMethods {
       800,
       900
     ];
+    // Create swatch
     Map<int, Color> swatch = <int, Color>{};
     final int r = color.red, g = color.green, b = color.blue;
 
@@ -35,10 +37,15 @@ class AppMethods {
     return MaterialColor(color.value, swatch);
   }
 
+  // Compress file
   static Future<File> compressFilePNG(File file) async {
+    // Generate unique id
     var uniqueId = const Uuid().v4();
+    // Get the temporary directory
     final dir = await path_provider.getTemporaryDirectory();
+    // Create the final path
     final targetPath = "${dir.absolute.path}/$uniqueId.png";
+    // Compress the file
     var result = await FlutterImageCompress.compressAndGetFile(
       file.absolute.path,
       targetPath,

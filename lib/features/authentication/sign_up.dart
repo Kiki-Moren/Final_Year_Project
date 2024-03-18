@@ -6,7 +6,6 @@ import 'package:final_year_project_kiki/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../routes.dart';
@@ -32,6 +31,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   void dispose() {
+    // Dispose the controllers
     _fistNameController.dispose();
     _lastNameController.dispose();
     _usernameController.dispose();
@@ -55,13 +55,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           password: _passwordController.text,
         );
 
+        // Hide the loading indicator
         setState(() {
           _loading = false;
         });
 
         if (response.session != null) {
+          // Insert the user into the database
           final user = response.user;
-
           await Supabase.instance.client.from('users').insert({
             'user_id': user!.id,
             'first_name': _fistNameController.text,
@@ -71,9 +72,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             'base_currency': _currency,
           });
 
+          // Navigate to the dashboard
           Navigator.of(context)
               .pushNamedAndRemoveUntil(AppRoutes.dashboard, (route) => false);
         } else {
+          // Show a snackbar with the error message
           ScaffoldMessenger.of(context)
               .showSnackBar(const SnackBar(content: Text("Sign up failed")));
         }
@@ -83,7 +86,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         setState(() {
           _loading = false;
         });
-        Logger().d(e);
+
+        // Show a snackbar with the error message
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(authException.message)));
       }

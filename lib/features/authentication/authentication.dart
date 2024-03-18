@@ -12,6 +12,7 @@ class AuthenticationScreen extends StatefulWidget {
 }
 
 class _AuthenticationScreenState extends State<AuthenticationScreen> {
+  // Build the authentication screen
   @override
   Widget build(BuildContext context) {
     return Scaffold(body: _buildBody());

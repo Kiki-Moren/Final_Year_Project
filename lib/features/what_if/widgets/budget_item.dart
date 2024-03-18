@@ -41,6 +41,7 @@ class _BudgetItemState extends ConsumerState<BudgetItem> {
     required String currency,
     required String fromCurrency,
   }) async {
+    // Get the exchange rate
     final rate = await ref.read(appApiProvider).getExchangeRate(
           fromCurrency: fromCurrency,
           toCurrency: currency,
@@ -48,8 +49,7 @@ class _BudgetItemState extends ConsumerState<BudgetItem> {
           onError: (_) {},
         );
 
-    print("initial rate: $rate");
-
+    // Calculate the amount
     if (widget.choice == "Down") {
       return amount * rate * ((100 - widget.percentage) / 100);
     } else if (widget.choice == "Up") {
@@ -79,13 +79,6 @@ class _BudgetItemState extends ConsumerState<BudgetItem> {
         remainingAmount = 0;
       }
     }
-    // if (index == budgets.length - 1) {
-    //   _calculateTotalAmountLeft(
-    //     total: totalSavings,
-    //     remaining: remainingAmount,
-    //     baseCurrency: baseCurrency,
-    //   );
-    // }
 
     return remainingBudgets;
   }
@@ -136,6 +129,7 @@ class _BudgetItemState extends ConsumerState<BudgetItem> {
     required double spent,
     required Map<String, dynamic> savings,
   }) {
+    // Get the public URL of the image
     final String publicUrl = Supabase.instance.client.storage
         .from('public-bucket')
         .getPublicUrl(budget['image']);

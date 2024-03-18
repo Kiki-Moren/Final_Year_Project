@@ -25,11 +25,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    // Load initial values
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadInitialValues());
   }
 
   @override
   void dispose() {
+    // Dispose the controllers
     _firstNameController.dispose();
     _lastNameController.dispose();
     _usernameController.dispose();
@@ -39,6 +41,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   // Load initial values
   void _loadInitialValues() async {
+    // Get the current user
     final user = await Supabase.instance.client
         .from('users')
         .select()
@@ -54,11 +57,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // Update profile
   void _update() async {
     if (_formKey.currentState!.validate()) {
+      // Show loading indicator
       setState(() {
         _loading = true;
       });
       // update budget to database
-
       await Supabase.instance.client.from('users').update({
         'first_name': _firstNameController.text,
         'last_name': _lastNameController.text,
@@ -66,6 +69,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         'email': _emailController.text,
       }).match({'user_id': Supabase.instance.client.auth.currentUser!.id});
 
+      // Hide loading indicator
       setState(() {
         _loading = false;
       });

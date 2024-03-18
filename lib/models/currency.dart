@@ -1,3 +1,4 @@
+// Country Model
 class Country {
   String? currency;
   String? name;
