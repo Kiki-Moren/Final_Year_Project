@@ -6,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../widgets/more_items_widgets.dart';
@@ -116,7 +115,6 @@ class _AccountTabState extends State<AccountTab> {
                         .stream(primaryKey: ['id']).eq('user_id',
                             Supabase.instance.client.auth.currentUser!.id),
                     builder: (context, snapshot) {
-                      Logger().d(snapshot.data);
                       if (!snapshot.hasData) {
                         return const SizedBox();
                       }

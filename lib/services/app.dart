@@ -4,7 +4,6 @@ import 'package:final_year_project_kiki/state/data.dart';
 import 'package:final_year_project_kiki/utilities/exceptions.dart';
 import 'package:final_year_project_kiki/utilities/network.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final appApiProvider = Provider<AppService>((ref) => AppService());
@@ -48,8 +47,6 @@ class AppService {
         },
       );
 
-      Logger().d(response);
-
       return response['new_amount'];
     } on CustomException catch (e) {
       onError(e.toString());
@@ -75,8 +72,6 @@ class AppService {
         },
       );
 
-      Logger().d(response);
-
       return response['exchange_rate'];
     } on CustomException catch (e) {
       onError(e.toString());
@@ -99,8 +94,6 @@ class AppService {
           "X-Api-Key": "gqnmSOwaMx1vKRy5cNoS3w==DH77dB3J7e3cZu7b"
         },
       );
-
-      Logger().d(response);
 
       return response[0]['quote'];
     } on CustomException catch (e) {

@@ -98,9 +98,6 @@ class _BudgetItemState extends ConsumerState<BudgetItem> {
 
         final amount = snapshot.data as double;
 
-        print("initial: $amount");
-        print("initial: ${widget.budgets[widget.idx]['currency']}");
-
         final remainingBudgets = _spreadSavings(
           budgets: widget.budgets
               .map((e) => double.parse(e['amount'].toString()))

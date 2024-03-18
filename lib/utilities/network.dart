@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-import 'package:logger/logger.dart';
 import 'package:mime/mime.dart';
 import 'dart:convert';
 
@@ -100,8 +99,6 @@ class NetworkImplementation extends Network {
   }) async {
     Map<String, String> headers = createHeaders(incomingHeaders);
 
-    Logger().d(route);
-
     try {
       http.Response response = await http.delete(
         Uri.parse(route),
@@ -125,8 +122,6 @@ class NetworkImplementation extends Network {
     Map<String, dynamic> incomingHeaders = const {},
   }) async {
     Map<String, String> headers = createHeaders(incomingHeaders);
-
-    Logger().d(route);
 
     try {
       http.Response response = await http.get(
@@ -155,8 +150,6 @@ class NetworkImplementation extends Network {
     Map<String, dynamic> incomingHeaders = const {},
   }) async {
     Map<String, String> headers = createHeaders(incomingHeaders);
-
-    Logger().d(route);
 
     try {
       if (isFormData) {
@@ -208,8 +201,6 @@ class NetworkImplementation extends Network {
   }) async {
     Map<String, String> headers = createHeaders(incomingHeaders);
 
-    Logger().d(route);
-
     try {
       if (isFormData) {
         var request = http.MultipartRequest(
@@ -237,8 +228,6 @@ class NetworkImplementation extends Network {
 
         return handleFormResponse(response);
       } else {
-        Logger().d(json.encode(form));
-
         http.Response response = await http.post(
           Uri.parse(route),
           body: json.encode(form),
@@ -268,8 +257,6 @@ class NetworkImplementation extends Network {
   }) async {
     Map<String, String> headers = createHeaders(incomingHeaders);
 
-    Logger().d(route);
-
     try {
       if (isFormData) {
         var request = http.MultipartRequest(
@@ -291,8 +278,6 @@ class NetworkImplementation extends Network {
 
         return handleFormResponse(response);
       } else {
-        Logger().d(json.encode(form));
-
         http.Response response = await http.put(
           Uri.parse(route),
           body: json.encode(form),

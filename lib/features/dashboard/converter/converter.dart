@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CurrencyConverterTab extends ConsumerStatefulWidget {
@@ -227,7 +226,6 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
         .firstWhere((element) => element["currency"] == _toCurrency)["rates"]
         .map((e) => e["rate"])
         .toList();
-    Logger().d(exchangeRates);
 
     var spots = <FlSpot>[];
 
