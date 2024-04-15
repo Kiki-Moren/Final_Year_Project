@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:logger/logger.dart';
 import 'package:mime/mime.dart';
 import 'dart:convert';
 
@@ -57,6 +58,7 @@ class NetworkImplementation extends Network {
   dynamic handleResponse(http.Response response) {
     if (!isSuccessResponse(response.statusCode)) {
       var decodedResponse = json.decode(response.body);
+      Logger().e(decodedResponse);
       throw CustomException(
         message: decodedResponse["message"] ??
             decodedResponse["Message"] ??

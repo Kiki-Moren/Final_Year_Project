@@ -97,25 +97,6 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
         padding: const EdgeInsets.all(20.0),
         child: ListView(
           children: [
-            StreamBuilder(
-                stream: _user,
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const SizedBox();
-                  }
-                  final user = snapshot.data!.first;
-
-                  return Center(
-                    child: Text(
-                      "Hello ${user['first_name']},",
-                      style: TextStyle(
-                        fontSize: 24.0.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  );
-                }),
-            SizedBox(height: 20.0.h),
             _buildForm(),
             SizedBox(height: 20.0.h),
             _buildExchangeRate(),
@@ -123,7 +104,7 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
             PrimaryButton(
               onPressed: () =>
                   Navigator.of(context).pushNamed(AppRoutes.addBudget),
-              buttonText: 'Create A Budget',
+              buttonText: 'Convert',
             ),
           ],
         ),

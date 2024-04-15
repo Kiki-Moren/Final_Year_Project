@@ -295,7 +295,7 @@ class _BudgetTabState extends ConsumerState<BudgetTab> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "But the exchange can and this will affect your budget",
+            "But the exchange rate can change and this will affect your budget",
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15.0.sp,

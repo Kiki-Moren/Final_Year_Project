@@ -123,7 +123,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 ),
               ),
               Text(
-                "Please sign up to enjoy all trakit features",
+                "Please sign up to enjoy all BUDRATE features",
                 style: TextStyle(
                   fontSize: 16.0.sp,
                   fontWeight: FontWeight.w700,
