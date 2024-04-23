@@ -97,6 +97,15 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
         padding: const EdgeInsets.all(20.0),
         child: ListView(
           children: [
+            Text(
+              "Convert",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20.0.sp,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
             _buildForm(),
             SizedBox(height: 20.0.h),
             _buildExchangeRate(),
@@ -104,7 +113,7 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
             PrimaryButton(
               onPressed: () =>
                   Navigator.of(context).pushNamed(AppRoutes.addBudget),
-              buttonText: 'Convert',
+              buttonText: 'Add New Budget',
             ),
           ],
         ),
