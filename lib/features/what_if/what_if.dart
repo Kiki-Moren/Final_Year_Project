@@ -148,7 +148,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
                 signed: true,
               ),
               formatters: [
-                CurrencyTextInputFormatter(
+                CurrencyTextInputFormatter.currency(
                   decimalDigits: 2,
                   symbol: '',
                 ),
@@ -162,7 +162,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> {
               data: ref.watch(currencies).map((e) => e.currency!).toList(),
               hint: "Select Base Currency",
               selected: _selectedCurrency,
-              label: "Base Currency",
+              label: "Quote Currency",
               onChanged: (String? value) {
                 _selectedCurrency = value;
 

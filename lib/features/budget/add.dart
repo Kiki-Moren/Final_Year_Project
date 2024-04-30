@@ -178,7 +178,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
                   signed: true,
                 ),
                 formatters: [
-                  CurrencyTextInputFormatter(
+                  CurrencyTextInputFormatter.currency(
                     decimalDigits: 2,
                     symbol: '',
                   ),

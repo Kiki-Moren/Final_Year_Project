@@ -158,7 +158,7 @@ class _CurrencyConverterTabState extends ConsumerState<CurrencyConverterTab> {
             signed: true,
           ),
           formatters: [
-            CurrencyTextInputFormatter(
+            CurrencyTextInputFormatter.currency(
               decimalDigits: 2,
               symbol: '',
             ),
